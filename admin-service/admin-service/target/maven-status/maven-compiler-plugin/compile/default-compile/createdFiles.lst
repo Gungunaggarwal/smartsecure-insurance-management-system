@@ -1,0 +1,12 @@
+com\smartcourier\admin\dto\ClaimStatusUpdateEvent.class
+com\smartcourier\admin\messaging\ClaimEventProducer.class
+com\smartcourier\admin\feign\ClaimsClient.class
+com\smartcourier\admin\config\SecurityConfig.class
+com\smartcourier\admin\dto\ClaimResponse.class
+com\smartcourier\admin\service\AdminService.class
+com\smartcourier\admin\exception\GlobalExceptionHandler.class
+com\smartcourier\admin\AdminServiceApplication.class
+com\smartcourier\admin\messaging\RabbitMQConfig.class
+com\smartcourier\admin\controller\AdminController.class
+com\smartcourier\admin\dto\AdminReviewRequest.class
+com\smartcourier\admin\dto\ClaimResponse$ClaimResponseBuilder.class

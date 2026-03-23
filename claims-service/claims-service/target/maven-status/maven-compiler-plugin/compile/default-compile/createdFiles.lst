@@ -1,0 +1,16 @@
+com\smartcourier\claims\service\FileStorageUtil.class
+com\smartcourier\claims\repository\ClaimRepository.class
+com\smartcourier\claims\config\SecurityConfig.class
+com\smartcourier\claims\messaging\ClaimMessageConsumer.class
+com\smartcourier\claims\dto\ClaimInitiateRequest.class
+com\smartcourier\claims\dto\ClaimInitiateRequest$ClaimInitiateRequestBuilder.class
+com\smartcourier\claims\dto\ClaimResponse$ClaimResponseBuilder.class
+com\smartcourier\claims\config\RabbitMQConfig.class
+com\smartcourier\claims\exception\GlobalExceptionHandler.class
+com\smartcourier\claims\controller\ClaimsController.class
+com\smartcourier\claims\ClaimsServiceApplication.class
+com\smartcourier\claims\entity\Claim.class
+com\smartcourier\claims\dto\ClaimStatusUpdateEvent.class
+com\smartcourier\claims\entity\Claim$ClaimBuilder.class
+com\smartcourier\claims\service\ClaimsService.class
+com\smartcourier\claims\dto\ClaimResponse.class

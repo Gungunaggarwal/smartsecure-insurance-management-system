@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RabbitMQConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">admin-service</a> &gt; <a href="index.source.html" class="el_package">com.smartcourier.admin.messaging</a> &gt; <span class="el_source">RabbitMQConfig.java</span></div><h1>RabbitMQConfig.java</h1><pre class="source lang-java linenums">package com.smartcourier.admin.messaging;
+
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+<span class="fc" id="L13">public class RabbitMQConfig {</span>
+
+    public static final String QUEUE_NAME = &quot;claim.status.queue&quot;;
+    public static final String EXCHANGE_NAME = &quot;claim.exchange&quot;;
+    public static final String ROUTING_KEY = &quot;claim.routing.key&quot;;
+
+    @Bean
+    public Queue claimStatusQueue() {
+<span class="fc" id="L21">        return new Queue(QUEUE_NAME, true);</span>
+    }
+
+    @Bean
+    public DirectExchange claimExchange() {
+<span class="fc" id="L26">        return new DirectExchange(EXCHANGE_NAME);</span>
+    }
+
+    @Bean
+    public Binding binding(Queue queue, DirectExchange exchange) {
+<span class="fc" id="L31">        return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY);</span>
+    }
+
+    @Bean
+    public MessageConverter messageConverter() {
+<span class="fc" id="L36">        return new Jackson2JsonMessageConverter();</span>
+    }
+
+    // 🔥 IMPORTANT ADD THIS
+    @Bean
+    public org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate(
+            org.springframework.amqp.rabbit.connection.ConnectionFactory connectionFactory) {
+
+<span class="fc" id="L44">        org.springframework.amqp.rabbit.core.RabbitTemplate template =</span>
+                new org.springframework.amqp.rabbit.core.RabbitTemplate(connectionFactory);
+
+<span class="fc" id="L47">        template.setMessageConverter(messageConverter());</span>
+
+<span class="fc" id="L49">        return template;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
