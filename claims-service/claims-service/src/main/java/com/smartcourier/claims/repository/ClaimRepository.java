@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface ClaimRepository extends JpaRepository<Claim, Long> {
     Optional<Claim> findByIdempotencyKey(String idempotencyKey);
+    long countByStatus(String status);
 }

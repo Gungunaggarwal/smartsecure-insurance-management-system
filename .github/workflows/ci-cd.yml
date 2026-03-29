@@ -1,0 +1,90 @@
+name: Java CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        service: [
+          'service-registry/service-registry',
+          'config-server/config-server',
+          'api-gateway/api-gateway',
+          'auth-service (1)/auth-service',
+          'policy-service/policy-service',
+          'claims-service/claims-service',
+          'admin-service/admin-service'
+        ]
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Build Service with Maven
+      shell: pwsh
+      working-directory: ${{ matrix.service }}
+      run: |
+        if (Test-Path "mvnw.cmd") {
+          ./mvnw.cmd clean package -DskipTests
+        } else {
+          mvn clean package -DskipTests
+        }
+
+    - name: Run Tests
+      shell: pwsh
+      working-directory: ${{ matrix.service }}
+      run: |
+        if (Test-Path "mvnw.cmd") {
+          ./mvnw.cmd test
+        } else {
+          mvn test
+        }
+
+  dockerize:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - service_name: service-registry
+            path: service-registry/service-registry
+          - service_name: config-server
+            path: config-server/config-server
+          - service_name: api-gateway
+            path: api-gateway/api-gateway
+          - service_name: auth-service
+            path: auth-service (1)/auth-service
+          - service_name: policy-service
+            path: policy-service/policy-service
+          - service_name: claims-service
+            path: claims-service/claims-service
+          - service_name: admin-service
+            path: admin-service/admin-service
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Re-build Service to generate JAR (Ubuntu for Docker)
+      working-directory: ${{ matrix.path }}
+      run: mvn clean package -DskipTests
+
+    - name: Build Docker image
+      run: |
+        docker build -t ${{ matrix.service_name }}:latest ${{ matrix.path }}

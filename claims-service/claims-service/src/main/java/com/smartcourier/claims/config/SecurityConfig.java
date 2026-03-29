@@ -32,7 +32,9 @@ public class SecurityConfig {
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/api/v1/*/swagger-ui/**")).permitAll()
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/swagger-ui.html")).permitAll()
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/api/v1/*/swagger-ui.html")).permitAll()
-                        .anyRequest().hasRole("USER")
+                        // Allow internal Feign calls from admin-service without user auth
+                        .requestMatchers(AntPathRequestMatcher.antMatcher("/api/v1/claims/*/track")).permitAll()
+                        .anyRequest().hasAnyRole("USER", "ADMIN")
                 );
         return http.build();
     }

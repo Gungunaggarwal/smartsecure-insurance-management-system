@@ -1,6 +1,5 @@
 package com.smartcourier.claims.controller;
 
-import com.smartcourier.claims.dto.ClaimInitiateRequest;
 import com.smartcourier.claims.dto.ClaimResponse;
 import com.smartcourier.claims.service.ClaimsService;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +29,6 @@ public class ClaimsControllerTest {
     private ClaimsController claimsController;
 
     private ClaimResponse testResponse;
-    private ClaimInitiateRequest testRequest;
 
     @BeforeEach
     void setUp() {
@@ -40,35 +38,27 @@ public class ClaimsControllerTest {
                 .username("johndoe")
                 .description("Test description")
                 .status("PENDING")
+                .documentPath("/tmp/uploads/file.txt")
                 .build();
-
-        testRequest = new ClaimInitiateRequest();
-        testRequest.setPolicyId(1L);
-        testRequest.setDescription("Test description");
-        testRequest.setIdempotencyKey("uid-test");
     }
 
     @Test
-    void uploadDocument_ShouldReturnOkAndPath() {
-        MultipartFile file = new MockMultipartFile("file", "content".getBytes());
-        when(claimsService.uploadDocument(any(MultipartFile.class), eq("johndoe"))).thenReturn("/tmp/uploads/file.txt");
+    void initiateClaimWithDoc_ShouldReturnCreated() {
+        MultipartFile file = new MockMultipartFile("file", "test.pdf", "application/pdf", "content".getBytes());
 
-        ResponseEntity<String> response = claimsController.uploadDocument(file, "johndoe");
+        when(claimsService.initiateClaimWithDoc(
+                any(MultipartFile.class), eq(1L), eq("Test description"), eq("johndoe")))
+                .thenReturn(testResponse);
 
-        assertNotNull(response);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("/tmp/uploads/file.txt", response.getBody());
-    }
-
-    @Test
-    void initiateClaim_ShouldReturnCreated() {
-        when(claimsService.initiateClaim(any(ClaimInitiateRequest.class), eq("johndoe"))).thenReturn(testResponse);
-
-        ResponseEntity<ClaimResponse> response = claimsController.initiateClaim(testRequest, "johndoe");
+        ResponseEntity<ClaimResponse> response =
+                claimsController.initiateClaimWithDoc(file, 1L, "Test description", "johndoe");
 
         assertNotNull(response);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody());
         assertEquals(1L, response.getBody().getId());
+        assertEquals("PENDING", response.getBody().getStatus());
+        assertEquals("/tmp/uploads/file.txt", response.getBody().getDocumentPath());
     }
 
     @Test
@@ -82,3 +72,4 @@ public class ClaimsControllerTest {
         assertEquals(1L, response.getBody().getId());
     }
 }
+

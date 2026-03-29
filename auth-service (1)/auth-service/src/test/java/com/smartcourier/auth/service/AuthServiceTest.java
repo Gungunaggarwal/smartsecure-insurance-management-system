@@ -113,4 +113,89 @@ class AuthServiceTest {
         assertEquals("testuser", response.getUsername());
         assertEquals("test@test.com", response.getEmail());
     }
+
+    @Test
+    void countUsers_ShouldReturnTotalCount() {
+        when(userRepository.count()).thenReturn(5L);
+
+        long count = authService.countUsers();
+
+        assertEquals(5L, count);
+        verify(userRepository, times(1)).count();
+    }
+
+    @Test
+    void countUsersByRole_ShouldReturnCountForRole() {
+        when(userRepository.countByRole("USER")).thenReturn(3L);
+        when(userRepository.countByRole("ADMIN")).thenReturn(1L);
+
+        assertEquals(3L, authService.countUsersByRole("USER"));
+        assertEquals(1L, authService.countUsersByRole("ADMIN"));
+        verify(userRepository, times(1)).countByRole("USER");
+        verify(userRepository, times(1)).countByRole("ADMIN");
+    }
+
+    @Test
+    void register_DuplicateUsername_ShouldThrow() {
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+
+        assertThrows(RuntimeException.class, () -> authService.register(registerRequest));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void register_DuplicateEmail_ShouldThrow() {
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
+
+        assertThrows(RuntimeException.class, () -> authService.register(registerRequest));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void getUserByUsername_NotFound_ShouldThrow() {
+        when(userRepository.findByUsername("unknown")).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> authService.getUserByUsername("unknown"));
+    }
+
+    @Test
+    void updateUser_ShouldUpdateEmailAndRole() {
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenReturn(user);
+
+        RegisterRequest updateReq = new RegisterRequest();
+        updateReq.setEmail("new@email.com");
+        updateReq.setRole("ADMIN");
+
+        UserResponse response = authService.updateUser("testuser", updateReq);
+
+        assertNotNull(response);
+        verify(userRepository, times(1)).findByUsername("testuser");
+        verify(userRepository, times(1)).save(any(User.class));
+    }
+
+    @Test
+    void updateUser_NotFound_ShouldThrow() {
+        when(userRepository.findByUsername("ghost")).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class,
+                () -> authService.updateUser("ghost", new RegisterRequest()));
+    }
+
+    @Test
+    void deleteUser_ShouldDeleteFromRepository() {
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+
+        authService.deleteUser("testuser");
+
+        verify(userRepository, times(1)).delete(user);
+    }
+
+    @Test
+    void deleteUser_NotFound_ShouldThrow() {
+        when(userRepository.findByUsername("ghost")).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> authService.deleteUser("ghost"));
+    }
 }

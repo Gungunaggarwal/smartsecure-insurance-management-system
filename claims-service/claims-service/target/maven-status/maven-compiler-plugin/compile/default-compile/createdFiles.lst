@@ -2,8 +2,10 @@ com\smartcourier\claims\service\FileStorageUtil.class
 com\smartcourier\claims\repository\ClaimRepository.class
 com\smartcourier\claims\config\SecurityConfig.class
 com\smartcourier\claims\messaging\ClaimMessageConsumer.class
+com\smartcourier\claims\config\OpenApiConfig.class
 com\smartcourier\claims\dto\ClaimInitiateRequest.class
 com\smartcourier\claims\dto\ClaimInitiateRequest$ClaimInitiateRequestBuilder.class
+com\smartcourier\claims\config\RoleHeaderFilter.class
 com\smartcourier\claims\dto\ClaimResponse$ClaimResponseBuilder.class
 com\smartcourier\claims\config\RabbitMQConfig.class
 com\smartcourier\claims\exception\GlobalExceptionHandler.class

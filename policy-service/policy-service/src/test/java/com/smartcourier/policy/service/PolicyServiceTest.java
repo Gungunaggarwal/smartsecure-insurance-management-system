@@ -81,4 +81,79 @@ public class PolicyServiceTest {
         verify(policyRepository, times(2)).findById(1L); // Called in purchasePolicy and calculatePremium
     }
 
+    @Test
+    void countPolicies_ShouldReturnTotal() {
+        when(policyRepository.count()).thenReturn(4L);
+
+        long count = policyService.countPolicies();
+
+        assertEquals(4L, count);
+        verify(policyRepository, times(1)).count();
+    }
+
+    @Test
+    void countPoliciesByType_ShouldReturnCountForType() {
+        when(policyRepository.countByType("HEALTH")).thenReturn(2L);
+        when(policyRepository.countByType("GENERAL")).thenReturn(1L);
+
+        assertEquals(2L, policyService.countPoliciesByType("HEALTH"));
+        assertEquals(1L, policyService.countPoliciesByType("GENERAL"));
+    }
+
+    @Test
+    void purchasePolicy_NotFound_ShouldThrow() {
+        when(policyRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> policyService.purchasePolicy(99L));
+    }
+
+    @Test
+    void calculatePremium_ShouldApply5PercentMarkup() {
+        when(policyRepository.findById(1L)).thenReturn(Optional.of(testPolicy));
+
+        java.math.BigDecimal premium = policyService.calculatePremium(1L);
+
+        assertEquals(new java.math.BigDecimal("525.00"), premium);
+    }
+
+    @Test
+    void updatePolicy_ShouldUpdateAndReturn() {
+        when(policyRepository.findById(1L)).thenReturn(Optional.of(testPolicy));
+        when(policyRepository.save(any(Policy.class))).thenReturn(testPolicy);
+
+        PolicyRequest updateReq = new PolicyRequest();
+        updateReq.setName("Updated Policy");
+        updateReq.setBasePremium(BigDecimal.valueOf(750));
+
+        PolicyResponse result = policyService.updatePolicy(1L, updateReq);
+
+        assertNotNull(result);
+        verify(policyRepository, times(1)).findById(1L);
+        verify(policyRepository, times(1)).save(any(Policy.class));
+    }
+
+    @Test
+    void updatePolicy_NotFound_ShouldThrow() {
+        when(policyRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class,
+                () -> policyService.updatePolicy(99L, new PolicyRequest()));
+    }
+
+    @Test
+    void deletePolicy_ShouldRemovePolicy() {
+        when(policyRepository.findById(1L)).thenReturn(Optional.of(testPolicy));
+
+        policyService.deletePolicy(1L);
+
+        verify(policyRepository, times(1)).delete(testPolicy);
+    }
+
+    @Test
+    void deletePolicy_NotFound_ShouldThrow() {
+        when(policyRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> policyService.deletePolicy(99L));
+    }
+
 }

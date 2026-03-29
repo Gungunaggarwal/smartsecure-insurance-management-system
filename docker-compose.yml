@@ -1,0 +1,217 @@
+version: '3.8'
+
+services:
+  # ─── Infrastructure ────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-db
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    volumes:
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - courier-network
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq-broker
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - courier-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    networks:
+      - courier-network
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin-tracing
+    ports:
+      - "9411:9411"
+    networks:
+      - courier-network
+
+  # ─── Core Services ─────────────────────────────────────────────────────────
+  service-registry:
+    build: 
+      context: ./service-registry/service-registry
+      dockerfile: Dockerfile
+    container_name: service-registry
+    ports:
+      - "8761:8761"
+    networks:
+      - courier-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8761/eureka/apps"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  config-server:
+    build:
+      context: ./config-server/config-server
+      dockerfile: Dockerfile
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: native
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: file:///app/config-repo
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka/
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: 1.0
+    volumes:
+      - ./config-repo/config-repo:/app/config-repo
+    networks:
+      - courier-network
+
+  api-gateway:
+    build:
+      context: ./api-gateway/api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8090:8090"
+    depends_on:
+      config-server:
+        condition: service_started
+      zipkin:
+        condition: service_started
+    environment:
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka/
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: 1.0
+    networks:
+      - courier-network
+
+  # ─── Business Services ─────────────────────────────────────────────────────
+  auth-service:
+    build:
+      context: ./auth-service (1)/auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      postgres:
+        condition: service_started
+      config-server:
+        condition: service_started
+      redis:
+        condition: service_started
+      zipkin:
+        condition: service_started
+    environment:
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka/
+      EUREKA_INSTANCE_HOSTNAME: auth-service
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATA_REDIS_HOST: redis
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: 1.0
+    networks:
+      - courier-network
+
+  policy-service:
+    build:
+      context: ./policy-service/policy-service
+      dockerfile: Dockerfile
+    container_name: policy-service
+    ports:
+      - "8084:8084"
+    depends_on:
+      postgres:
+        condition: service_started
+      config-server:
+        condition: service_started
+      redis:
+        condition: service_started
+      zipkin:
+        condition: service_started
+    environment:
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka/
+      EUREKA_INSTANCE_HOSTNAME: policy-service
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/policy_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATA_REDIS_HOST: redis
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: 1.0
+    networks:
+      - courier-network
+
+  claims-service:
+    build:
+      context: ./claims-service/claims-service
+      dockerfile: Dockerfile
+    container_name: claims-service
+    ports:
+      - "8089:8089"
+    depends_on:
+      postgres:
+        condition: service_started
+      config-server:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+      zipkin:
+        condition: service_started
+    environment:
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka/
+      EUREKA_INSTANCE_HOSTNAME: claims-service
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/claims_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_RABBITMQ_HOST: rabbitmq
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: 1.0
+    networks:
+      - courier-network
+
+  admin-service:
+    build:
+      context: ./admin-service/admin-service
+      dockerfile: Dockerfile
+    container_name: admin-service
+    ports:
+      - "8087:8087"
+    depends_on:
+      config-server:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+      zipkin:
+        condition: service_started
+    environment:
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://service-registry:8761/eureka/
+      EUREKA_INSTANCE_HOSTNAME: admin-service
+      SPRING_RABBITMQ_HOST: rabbitmq
+      MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: 1.0
+    networks:
+      - courier-network
+
+networks:
+  courier-network:
+    driver: bridge
