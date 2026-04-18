@@ -34,8 +34,12 @@ public class ClaimMessageConsumer {
         try {
             claimsService.updateClaimStatus(claimId, status);
             log.info("Claim status successfully updated in database.");
+        } catch (RuntimeException ex) {
+            log.error("Failed to update claim status for ID: {}. Business/Runtime Error: {}", claimId, ex.getMessage(), ex);
+            throw ex; // Re-throw to allow rabbitmq retry or DLQ logic if configured
         } catch (Exception ex) {
-            log.error("Failed to update claim status for ID: {}. Error: {}", claimId, ex.getMessage());
+            log.warn("Unexpected non-runtime error during claim update for ID: {}: {}", claimId, ex.getMessage());
+            throw new RuntimeException("Unexpected error during claim status update", ex);
         }
     }
 }

@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.smartcourier.policy.exception.GlobalExceptionHandlerTest
+-------------------------------------------------------------------------------
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.140 s -- in com.smartcourier.policy.exception.GlobalExceptionHandlerTest

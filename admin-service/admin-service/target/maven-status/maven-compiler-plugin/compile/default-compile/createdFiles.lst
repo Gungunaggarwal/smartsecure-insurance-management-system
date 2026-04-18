@@ -9,6 +9,7 @@ com\smartcourier\admin\dto\PolicyUpdateRequest.class
 com\smartcourier\admin\config\SecurityConfig.class
 com\smartcourier\admin\dto\ClaimResponse.class
 com\smartcourier\admin\service\AdminService.class
+com\smartcourier\admin\exception\CustomAdminException.class
 com\smartcourier\admin\exception\GlobalExceptionHandler.class
 com\smartcourier\admin\config\OpenApiConfig.class
 com\smartcourier\admin\AdminServiceApplication.class

@@ -5,7 +5,7 @@ $services = @(
     "service-registry/service-registry",
     "config-server/config-server",
     "api-gateway/api-gateway",
-    "auth-service (1)/auth-service",
+    "auth-service/auth-service",
     "policy-service/policy-service",
     "claims-service/claims-service",
     "admin-service/admin-service"

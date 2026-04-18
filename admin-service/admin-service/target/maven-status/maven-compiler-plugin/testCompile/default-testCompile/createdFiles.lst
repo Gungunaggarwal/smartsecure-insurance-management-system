@@ -1,5 +1,6 @@
+com\smartcourier\admin\controller\AdminControllerTest.class
 com\smartcourier\admin\AdminServiceApplicationTest.class
+com\smartcourier\admin\AdminServiceIntegrationTest.class
 com\smartcourier\admin\service\AdminServiceTest.class
 com\smartcourier\admin\messaging\ClaimEventProducerTest.class
 com\smartcourier\admin\exception\GlobalExceptionHandlerTest.class
-com\smartcourier\admin\AdminServiceIntegrationTest.class

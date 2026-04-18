@@ -15,12 +15,12 @@ jobs:
           'service-registry/service-registry',
           'config-server/config-server',
           'api-gateway/api-gateway',
-          'auth-service (1)/auth-service',
+          'auth-service/auth-service',
           'policy-service/policy-service',
           'claims-service/claims-service',
           'admin-service/admin-service'
         ]
-    
+
     steps:
     - uses: actions/checkout@v4
 
@@ -51,7 +51,7 @@ jobs:
           mvn test
         }
 
-  dockerize:
+  sonar-analysis:
     needs: build-and-test
     runs-on: ubuntu-latest
     strategy:
@@ -64,7 +64,51 @@ jobs:
           - service_name: api-gateway
             path: api-gateway/api-gateway
           - service_name: auth-service
-            path: auth-service (1)/auth-service
+            path: auth-service/auth-service
+          - service_name: policy-service
+            path: policy-service/policy-service
+          - service_name: claims-service
+            path: claims-service/claims-service
+          - service_name: admin-service
+            path: admin-service/admin-service
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history needed for SonarQube blame info
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Build, Test & Analyze with SonarQube
+      working-directory: ${{ matrix.path }}
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      run: |
+        mvn -B verify sonar:sonar \
+          -Dsonar.projectKey=${{ matrix.service_name }} \
+          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+          -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+
+  dockerize:
+    needs: sonar-analysis
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - service_name: service-registry
+            path: service-registry/service-registry
+          - service_name: config-server
+            path: config-server/config-server
+          - service_name: api-gateway
+            path: api-gateway/api-gateway
+          - service_name: auth-service
+            path: auth-service/auth-service
           - service_name: policy-service
             path: policy-service/policy-service
           - service_name: claims-service
@@ -81,10 +125,10 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Re-build Service to generate JAR (Ubuntu for Docker)
+    - name: Build Service JAR
       working-directory: ${{ matrix.path }}
       run: mvn clean package -DskipTests
 
-    - name: Build Docker image
+    - name: Build Docker Image
       run: |
         docker build -t ${{ matrix.service_name }}:latest ${{ matrix.path }}
