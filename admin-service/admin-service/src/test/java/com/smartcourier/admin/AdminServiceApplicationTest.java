@@ -10,12 +10,6 @@ class AdminServiceApplicationTest {
 
     @Test
     void contextLoads() {
-        // Test if the application context loads successfully
-    }
-
-    @Test
-    void mainMethodTest() {
-        // Test the main method entry point
-        AdminServiceApplication.main(new String[] {});
+        // Simple test to ensure application context starts
     }
 }

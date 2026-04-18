@@ -1,6 +1,0 @@
-projectKey=claims-service
-serverUrl=http://localhost:9000
-serverVersion=26.3.0.120487
-dashboardUrl=http://localhost:9000/dashboard?id=claims-service
-ceTaskId=1a1ddbc2-83b5-4c4e-a330-a1a3f9348e1c
-ceTaskUrl=http://localhost:9000/api/ce/task?id=1a1ddbc2-83b5-4c4e-a330-a1a3f9348e1c

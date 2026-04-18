@@ -4,7 +4,6 @@ import com.smartcourier.admin.dto.AdminReviewRequest;
 import com.smartcourier.admin.dto.ClaimResponse;
 import com.smartcourier.admin.dto.PolicyResponse;
 import com.smartcourier.admin.dto.PolicyUpdateRequest;
-import com.smartcourier.admin.exception.CustomAdminException;
 import com.smartcourier.admin.feign.ClaimsClient;
 import com.smartcourier.admin.feign.PolicyClient;
 import com.smartcourier.admin.messaging.ClaimEventProducer;
@@ -89,21 +88,21 @@ public class AdminService {
     // ─── Fallback Methods ────────────────────────────────────────────────────
     public ClaimResponse claimFallbackResponse(Long id, String d, String s, Throwable ex) {
         log.error("Claims service unavailable for claim {}: {}", id, ex.getMessage());
-        throw new CustomAdminException("Claims Service is currently unavailable.");
+        throw new RuntimeException("Claims Service is currently unavailable.");
     }
 
     public void claimDeleteFallback(Long id, Throwable ex) {
         log.error("Claims service unavailable - could not delete claim {}: {}", id, ex.getMessage());
-        throw new CustomAdminException("Claims Service is currently unavailable.");
+        throw new RuntimeException("Claims Service is currently unavailable.");
     }
 
     public PolicyResponse policyFallbackResponse(Long id, PolicyUpdateRequest req, Throwable ex) {
         log.error("Policy service unavailable for policy {}: {}", id, ex.getMessage());
-        throw new CustomAdminException("Policy Service is currently unavailable.");
+        throw new RuntimeException("Policy Service is currently unavailable.");
     }
 
     public void policyDeleteFallback(Long id, Throwable ex) {
         log.error("Policy service unavailable - could not delete policy {}: {}", id, ex.getMessage());
-        throw new CustomAdminException("Policy Service is currently unavailable.");
+        throw new RuntimeException("Policy Service is currently unavailable.");
     }
 }

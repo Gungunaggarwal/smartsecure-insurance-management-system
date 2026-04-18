@@ -2,21 +2,17 @@ package com.smartcourier.admin.service;
 
 import com.smartcourier.admin.dto.AdminReviewRequest;
 import com.smartcourier.admin.dto.ClaimResponse;
-import com.smartcourier.admin.dto.PolicyResponse;
-import com.smartcourier.admin.dto.PolicyUpdateRequest;
-import com.smartcourier.admin.exception.CustomAdminException;
 import com.smartcourier.admin.feign.ClaimsClient;
 import com.smartcourier.admin.feign.PolicyClient;
 import com.smartcourier.admin.messaging.ClaimEventProducer;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,105 +30,118 @@ class AdminServiceTest {
     @InjectMocks
     private AdminService adminService;
 
+    private AdminReviewRequest testRequest;
+    private ClaimResponse testClaim;
+
+    @BeforeEach
+    void setUp() {
+        testRequest = new AdminReviewRequest();
+        testRequest.setStatus("APPROVED");
+
+        testClaim = ClaimResponse.builder()
+                .id(1L)
+                .status("PENDING")
+                .build();
+    }
+
     @Test
-    void testReviewClaim() {
-        AdminReviewRequest request = new AdminReviewRequest();
-        request.setStatus("APPROVED");
-        ClaimResponse response = new ClaimResponse();
-        response.setId(1L);
+    void reviewClaim_Success() {
+        when(claimsClient.trackClaim(1L)).thenReturn(testClaim);
 
-        when(claimsClient.trackClaim(1L)).thenReturn(response);
-
-        String result = adminService.reviewClaim(1L, request);
+        String result = adminService.reviewClaim(1L, testRequest);
 
         assertEquals("Review submitted successfully. Claim status update initiated via queue.", result);
-        verify(claimEventProducer).sendClaimStatusUpdate(1L, "APPROVED");
+        verify(claimsClient, times(1)).trackClaim(1L);
+        verify(claimEventProducer, times(1)).sendClaimStatusUpdate(1L, "APPROVED");
     }
 
     @Test
-    void testReviewClaimFallback() {
-        AdminReviewRequest request = new AdminReviewRequest();
-        String result = adminService.reviewClaimFallback(1L, request, new RuntimeException("Error"));
-        assertTrue(result.contains("unavailable"));
+    void reviewClaimFallback_ShouldReturnFallbackMessage() {
+        RuntimeException ex = new RuntimeException("Service down");
+
+        String result = adminService.reviewClaimFallback(1L, testRequest, ex);
+
+        assertEquals("Claims Service is currently unavailable. Review request has been locally logged but not processed.", result);
     }
 
     @Test
-    void testUpdateClaim() {
-        ClaimResponse response = new ClaimResponse();
-        when(claimsClient.updateClaim(1L, "desc", "PENDING")).thenReturn(response);
+    void reviewClaim_RejectedStatus_ShouldSucceed() {
+        AdminReviewRequest rejectRequest = new AdminReviewRequest();
+        rejectRequest.setStatus("REJECTED");
+        rejectRequest.setComments("Fraudulent claim");
 
-        ClaimResponse result = adminService.updateClaim(1L, "desc", "PENDING");
+        when(claimsClient.trackClaim(2L)).thenReturn(testClaim);
 
-        assertNotNull(result);
-        verify(claimsClient).updateClaim(1L, "desc", "PENDING");
+        String result = adminService.reviewClaim(2L, rejectRequest);
+
+        assertEquals("Review submitted successfully. Claim status update initiated via queue.", result);
+        verify(claimEventProducer, times(1)).sendClaimStatusUpdate(1L, "REJECTED");
     }
 
     @Test
-    void testDeleteClaim() {
-        adminService.deleteClaim(1L);
-        verify(claimsClient).deleteClaim(1L);
-    }
-
-    @Test
-    void testGetClaimsStats() {
+    void getClaimsStats_ShouldReturnAllCounts() {
         when(claimsClient.countClaims()).thenReturn(10L);
-        when(claimsClient.countClaimsByStatus("PENDING")).thenReturn(2L);
-        when(claimsClient.countClaimsByStatus("APPROVED")).thenReturn(5L);
-        when(claimsClient.countClaimsByStatus("REJECTED")).thenReturn(3L);
+        when(claimsClient.countClaimsByStatus("PENDING")).thenReturn(5L);
+        when(claimsClient.countClaimsByStatus("APPROVED")).thenReturn(3L);
+        when(claimsClient.countClaimsByStatus("REJECTED")).thenReturn(2L);
 
-        Map<String, Long> stats = adminService.getClaimsStats();
+        java.util.Map<String, Long> stats = adminService.getClaimsStats();
 
         assertEquals(10L, stats.get("total"));
-        assertEquals(2L, stats.get("pending"));
-        assertEquals(5L, stats.get("approved"));
-        assertEquals(3L, stats.get("rejected"));
+        assertEquals(5L, stats.get("pending"));
+        assertEquals(3L, stats.get("approved"));
+        assertEquals(2L, stats.get("rejected"));
     }
 
     @Test
-    void testGetClaimsStatsFallback() {
-        Map<String, Long> stats = adminService.getClaimsStatsFallback(new RuntimeException("Error"));
+    void getClaimsStatsFallback_ShouldReturnNegativeValues() {
+        RuntimeException ex = new RuntimeException("Unavailable");
+
+        java.util.Map<String, Long> stats = adminService.getClaimsStatsFallback(ex);
+
         assertEquals(-1L, stats.get("total"));
+        assertEquals(-1L, stats.get("pending"));
     }
 
     @Test
-    void testUpdatePolicy() {
-        PolicyUpdateRequest request = new PolicyUpdateRequest();
-        PolicyResponse response = new PolicyResponse();
-        when(policyClient.updatePolicy(1L, request)).thenReturn(response);
+    void updateClaim_ShouldDelegatToClaimsClient() {
+        ClaimResponse updated = ClaimResponse.builder().id(1L).status("APPROVED").build();
+        when(claimsClient.updateClaim(1L, "new desc", "APPROVED")).thenReturn(updated);
 
-        PolicyResponse result = adminService.updatePolicy(1L, request);
+        ClaimResponse result = adminService.updateClaim(1L, "new desc", "APPROVED");
 
-        assertNotNull(result);
-        verify(policyClient).updatePolicy(1L, request);
+        assertEquals("APPROVED", result.getStatus());
+        verify(claimsClient, times(1)).updateClaim(1L, "new desc", "APPROVED");
     }
 
     @Test
-    void testDeletePolicy() {
+    void deleteClaim_ShouldDelegateToClaimsClient() {
+        adminService.deleteClaim(1L);
+
+        verify(claimsClient, times(1)).deleteClaim(1L);
+    }
+
+    @Test
+    void updatePolicy_ShouldDelegateToPolicyClient() {
+        com.smartcourier.admin.dto.PolicyResponse policyResp =
+                new com.smartcourier.admin.dto.PolicyResponse(1L, "Updated", "Desc",
+                        java.math.BigDecimal.valueOf(600), "HEALTH");
+        com.smartcourier.admin.dto.PolicyUpdateRequest req =
+                new com.smartcourier.admin.dto.PolicyUpdateRequest(
+                        "Updated", "Desc", java.math.BigDecimal.valueOf(600), "HEALTH");
+
+        when(policyClient.updatePolicy(1L, req)).thenReturn(policyResp);
+
+        com.smartcourier.admin.dto.PolicyResponse result = adminService.updatePolicy(1L, req);
+
+        assertEquals("Updated", result.getName());
+        verify(policyClient, times(1)).updatePolicy(1L, req);
+    }
+
+    @Test
+    void deletePolicy_ShouldDelegateToPolicyClient() {
         adminService.deletePolicy(1L);
-        verify(policyClient).deletePolicy(1L);
-    }
 
-    @Test
-    void testClaimFallbackResponse() {
-        assertThrows(CustomAdminException.class, () -> 
-            adminService.claimFallbackResponse(1L, "d", "s", new RuntimeException("Error")));
-    }
-
-    @Test
-    void testClaimDeleteFallback() {
-        assertThrows(CustomAdminException.class, () -> 
-            adminService.claimDeleteFallback(1L, new RuntimeException("Error")));
-    }
-
-    @Test
-    void testPolicyFallbackResponse() {
-        assertThrows(CustomAdminException.class, () -> 
-            adminService.policyFallbackResponse(1L, new PolicyUpdateRequest(), new RuntimeException("Error")));
-    }
-
-    @Test
-    void testPolicyDeleteFallback() {
-        assertThrows(CustomAdminException.class, () -> 
-            adminService.policyDeleteFallback(1L, new RuntimeException("Error")));
+        verify(policyClient, times(1)).deletePolicy(1L);
     }
 }

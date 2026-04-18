@@ -56,11 +56,8 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                     return chain.filter(
                             exchange.mutate().request(modifiedRequest).build());
 
-                } catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {
+                } catch (Exception e) {
                     exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                    return exchange.getResponse().setComplete();
-                } catch (RuntimeException e) {
-                    exchange.getResponse().setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
                     return exchange.getResponse().setComplete();
                 }
             }
