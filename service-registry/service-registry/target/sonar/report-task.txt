@@ -1,0 +1,6 @@
+projectKey=service-registry
+serverUrl=http://localhost:9000
+serverVersion=26.3.0.120487
+dashboardUrl=http://localhost:9000/dashboard?id=service-registry
+ceTaskId=31006090-48ff-4719-b128-c8b95d9eaa94
+ceTaskUrl=http://localhost:9000/api/ce/task?id=31006090-48ff-4719-b128-c8b95d9eaa94
