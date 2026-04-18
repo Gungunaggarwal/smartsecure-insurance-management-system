@@ -54,6 +54,7 @@ jobs:
   sonar-analysis:
     needs: build-and-test
     runs-on: ubuntu-latest
+    continue-on-error: true # Allowed to fail since Sonar might be local/inaccessible from CI
     strategy:
       matrix:
         include:
@@ -96,7 +97,7 @@ jobs:
           -Dsonar.token=${{ secrets.SONAR_TOKEN }}
 
   dockerize:
-    needs: sonar-analysis
+    needs: build-and-test
     runs-on: ubuntu-latest
     strategy:
       matrix:
