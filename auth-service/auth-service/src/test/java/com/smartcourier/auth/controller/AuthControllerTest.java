@@ -34,7 +34,7 @@ class AuthControllerTest {
 
     @Test
     void register_ShouldReturnCreatedAndToken() throws Exception {
-        AuthResponse authResponse = new AuthResponse("mock-jwt-token");
+        AuthResponse authResponse = AuthResponse.builder().token("mock-jwt-token").build();
         when(authService.register(any())).thenReturn(authResponse);
 
         com.smartcourier.auth.dto.RegisterRequest registerRequest = new com.smartcourier.auth.dto.RegisterRequest();
@@ -51,11 +51,11 @@ class AuthControllerTest {
 
     @Test
     void login_ShouldReturnOkAndToken() throws Exception {
-        AuthResponse authResponse = new AuthResponse("mock-jwt-token");
+        AuthResponse authResponse = AuthResponse.builder().token("mock-jwt-token").build();
         when(authService.login(any(LoginRequest.class))).thenReturn(authResponse);
 
         LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setUsername("testuser");
+        loginRequest.setEmail("test@email.com");
         loginRequest.setPassword("password");
 
         mockMvc.perform(post("/api/v1/auth/login")

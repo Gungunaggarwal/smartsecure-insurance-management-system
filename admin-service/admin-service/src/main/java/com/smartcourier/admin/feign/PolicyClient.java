@@ -20,4 +20,10 @@ public interface PolicyClient {
 
     @GetMapping("/count/type/{type}")
     long countPoliciesByType(@PathVariable("type") String type);
+
+    @PostMapping
+    PolicyResponse createPolicy(@RequestBody PolicyUpdateRequest request);
+
+    @GetMapping
+    java.util.List<PolicyResponse> getPolicies();
 }

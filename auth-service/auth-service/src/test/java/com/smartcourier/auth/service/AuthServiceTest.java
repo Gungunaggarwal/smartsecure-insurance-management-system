@@ -58,7 +58,7 @@ class AuthServiceTest {
         registerRequest.setRole("USER");
 
         loginRequest = new LoginRequest();
-        loginRequest.setUsername("testuser");
+        loginRequest.setEmail("test@test.com");
         loginRequest.setPassword("password");
     }
 
@@ -80,7 +80,7 @@ class AuthServiceTest {
 
     @Test
     void login_Success() {
-        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
         when(jwtUtil.generateToken(anyString(), anyString())).thenReturn("mock-token");
 
@@ -93,14 +93,14 @@ class AuthServiceTest {
 
     @Test
     void login_WrongPassword() {
-        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(false);
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             authService.login(loginRequest);
         });
 
-        assertEquals("Invalid username or password", exception.getMessage());
+        assertEquals("Invalid email or password", exception.getMessage());
     }
 
     @Test

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -39,6 +40,14 @@ public class ClaimsService {
         Claim saved = claimRepository.save(claim);
         log.info("Claim saved with ID: {} and documentPath: {}", saved.getId(), saved.getDocumentPath());
         return mapToResponse(saved);
+    }
+
+    // ─── Get By Username ─────────────────────────────────────────────────────
+    public List<ClaimResponse> getClaimsByUsername(String username) {
+        log.info("Fetching all claims for user: {}", username);
+        return claimRepository.findAllByUsername(username).stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     // ─── Track ───────────────────────────────────────────────────────────────

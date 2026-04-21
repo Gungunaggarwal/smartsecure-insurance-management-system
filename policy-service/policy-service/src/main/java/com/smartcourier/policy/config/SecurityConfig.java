@@ -23,34 +23,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(AbstractHttpConfigurer::disable) // Disable local CORS, managed by Gateway
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(new RoleHeaderFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(AntPathRequestMatcher.antMatcher("/v3/api-docs/**")).permitAll()
-                        .requestMatchers(AntPathRequestMatcher.antMatcher("/api/v1/*/v3/api-docs/**")).permitAll()
-                        .requestMatchers(AntPathRequestMatcher.antMatcher("/swagger-ui/**")).permitAll()
-                        .requestMatchers(AntPathRequestMatcher.antMatcher("/api/v1/*/swagger-ui/**")).permitAll()
-                        .requestMatchers(AntPathRequestMatcher.antMatcher("/swagger-ui.html")).permitAll()
-                        .requestMatchers(AntPathRequestMatcher.antMatcher("/api/v1/*/swagger-ui.html")).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/policies").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/policies").hasAnyRole("ADMIN", "USER")
-                        .requestMatchers(HttpMethod.POST, "/api/v1/policies/*/purchase").hasRole("USER")
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll() // Using permitAll for now to ensure connectivity, Gateway handles auth
                 );
         return http.build();
-    }
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
     }
 }

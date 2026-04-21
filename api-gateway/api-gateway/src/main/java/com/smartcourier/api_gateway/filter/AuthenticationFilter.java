@@ -24,6 +24,11 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     public GatewayFilter apply(Config config) {
         return ((exchange, chain) -> {
 
+            // ✅ Fallback: Always allow OPTIONS requests to bypass auth
+            if (exchange.getRequest().getMethod().name().equals("OPTIONS")) {
+                return chain.filter(exchange);
+            }
+
             if (validator.isSecured(exchange.getRequest())) {
 
                 java.util.List<String> authHeaders = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION);

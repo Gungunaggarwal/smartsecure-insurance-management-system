@@ -38,8 +38,11 @@ class AuthServiceIntegrationTest {
         // 1. Register
         RegisterRequest registerRequest = new RegisterRequest();
         registerRequest.setUsername("testuser");
+        registerRequest.setName("Test User");
         registerRequest.setPassword("password123");
         registerRequest.setEmail("test@example.com");
+        registerRequest.setPhone("1234567890");
+        registerRequest.setAddress("123 Main St");
         registerRequest.setRole("ROLE_CUSTOMER");
 
         AuthResponse regResponse = authService.register(registerRequest);
@@ -52,7 +55,7 @@ class AuthServiceIntegrationTest {
 
         // 2. Login
         LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setUsername("testuser");
+        loginRequest.setEmail("test@example.com");
         loginRequest.setPassword("password123");
 
         AuthResponse loginResponse = authService.login(loginRequest);
@@ -64,14 +67,17 @@ class AuthServiceIntegrationTest {
         // 1. Register
         RegisterRequest registerRequest = new RegisterRequest();
         registerRequest.setUsername("testuser");
+        registerRequest.setName("Test User");
         registerRequest.setPassword("password123");
         registerRequest.setEmail("test@example.com");
+        registerRequest.setPhone("1234567890");
+        registerRequest.setAddress("123 Main St");
         registerRequest.setRole("ROLE_CUSTOMER");
         authService.register(registerRequest);
 
         // 2. Login with wrong password
         LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setUsername("testuser");
+        loginRequest.setEmail("test@example.com");
         loginRequest.setPassword("wrongpassword");
 
         assertThrows(RuntimeException.class, () -> authService.login(loginRequest));

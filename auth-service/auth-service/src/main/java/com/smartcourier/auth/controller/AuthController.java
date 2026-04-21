@@ -30,7 +30,7 @@ public class AuthController {
     /** Login */
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        log.info("Received login request for: {}", request.getUsername());
+        log.info("Received login request for email: {}", request.getEmail());
         return ResponseEntity.ok(authService.login(request));
     }
 

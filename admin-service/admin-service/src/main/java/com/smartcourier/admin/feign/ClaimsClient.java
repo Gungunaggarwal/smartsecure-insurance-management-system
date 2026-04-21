@@ -23,4 +23,7 @@ public interface ClaimsClient {
 
     @GetMapping("/count/status/{status}")
     long countClaimsByStatus(@PathVariable("status") String status);
+
+    @GetMapping
+    java.util.List<ClaimResponse> getAllClaims();
 }

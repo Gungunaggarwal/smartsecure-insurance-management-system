@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -49,6 +50,13 @@ public class AdminController {
         return ResponseEntity.ok("Claim " + id + " deleted successfully.");
     }
 
+    /** Get all claims for administrative review */
+    @GetMapping("/claims")
+    public ResponseEntity<List<ClaimResponse>> getAllClaims() {
+        log.info("Admin received request to list all claims");
+        return ResponseEntity.ok(adminService.getAllClaims());
+    }
+
     /** Get claim counts: total, pending, approved, rejected */
     @GetMapping("/claims/stats")
     public ResponseEntity<Map<String, Long>> getClaimsStats() {
@@ -57,6 +65,20 @@ public class AdminController {
     }
 
     // ─── Policy Management ───────────────────────────────────────────────────
+
+    /** Create a new policy (proxied to policy-service) */
+    @PostMapping("/policies")
+    public ResponseEntity<PolicyResponse> createPolicy(@RequestBody PolicyUpdateRequest request) {
+        log.info("Admin received proxy request to CREATE a new policy: {}", request.getName());
+        return ResponseEntity.ok(adminService.createPolicy(request));
+    }
+
+    /** Get all policies for administrative management */
+    @GetMapping("/policies")
+    public ResponseEntity<List<PolicyResponse>> getPolicies() {
+        log.info("Admin received request to list all policies");
+        return ResponseEntity.ok(adminService.getPolicies());
+    }
 
     /** Update policy details (proxied to policy-service) */
     @PutMapping("/policies/{id}")

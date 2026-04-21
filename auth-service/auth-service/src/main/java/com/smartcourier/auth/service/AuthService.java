@@ -37,31 +37,44 @@ public class AuthService {
         }
         User user = User.builder()
                 .username(request.getUsername())
+                .name(request.getName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .phone(request.getPhone())
+                .address(request.getAddress())
                 .role(request.getRole() != null ? request.getRole() : "USER")
                 .build();
         userRepository.save(user);
         log.info("User {} registered successfully with role: {}", user.getUsername(), user.getRole());
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
-        return new AuthResponse(token);
+        return AuthResponse.builder()
+                .token(token)
+                .username(user.getUsername())
+                .name(user.getName())
+                .role(user.getRole())
+                .build();
     }
 
     // ─── Login ───────────────────────────────────────────────────────────────
     public AuthResponse login(LoginRequest request) {
-        log.info("Login attempt for user: {}", request.getUsername());
-        User user = userRepository.findByUsername(request.getUsername())
+        log.info("Login attempt for email: {}", request.getEmail());
+        User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> {
-                    log.warn("Login failed: User {} not found", request.getUsername());
-                    return new RuntimeException("Invalid username or password");
+                    log.warn("Login failed: User with email {} not found", request.getEmail());
+                    return new RuntimeException("Invalid email or password");
                 });
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            log.warn("Login failed: Invalid password for user {}", request.getUsername());
-            throw new RuntimeException("Invalid username or password");
+            log.warn("Login failed: Invalid password for email {}", request.getEmail());
+            throw new RuntimeException("Invalid email or password");
         }
-        log.info("User {} logged in successfully", user.getUsername());
+        log.info("User {} logged in successfully via email", user.getUsername());
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
-        return new AuthResponse(token);
+        return AuthResponse.builder()
+                .token(token)
+                .username(user.getUsername())
+                .name(user.getName())
+                .role(user.getRole())
+                .build();
     }
 
     // ─── Get User ────────────────────────────────────────────────────────────
@@ -79,8 +92,17 @@ public class AuthService {
         log.info("Admin/User updating profile for: {}", username);
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
+        if (request.getName() != null && !request.getName().isBlank()) {
+            user.setName(request.getName());
+        }
         if (request.getEmail() != null && !request.getEmail().isBlank()) {
             user.setEmail(request.getEmail());
+        }
+        if (request.getPhone() != null && !request.getPhone().isBlank()) {
+            user.setPhone(request.getPhone());
+        }
+        if (request.getAddress() != null && !request.getAddress().isBlank()) {
+            user.setAddress(request.getAddress());
         }
         if (request.getRole() != null && !request.getRole().isBlank()) {
             log.info("Changing role for user {} to {}", username, request.getRole());
@@ -118,7 +140,10 @@ public class AuthService {
         return UserResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
+                .name(user.getName())
                 .email(user.getEmail())
+                .phone(user.getPhone())
+                .address(user.getAddress())
                 .role(user.getRole())
                 .build();
     }

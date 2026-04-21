@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/claims")
@@ -29,6 +31,13 @@ public class ClaimsController {
         return new ResponseEntity<>(
                 claimsService.initiateClaimWithDoc(file, policyId, description, username),
                 HttpStatus.CREATED);
+    }
+
+    /** Get all claims for a specific user */
+    @GetMapping("/user/{username}")
+    public ResponseEntity<List<ClaimResponse>> getUserClaims(@PathVariable String username) {
+        log.info("Received request to get all claims for user: {}", username);
+        return ResponseEntity.ok(claimsService.getClaimsByUsername(username));
     }
 
     /** Track a claim by ID */

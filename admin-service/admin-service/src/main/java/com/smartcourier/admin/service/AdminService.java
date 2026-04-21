@@ -54,6 +54,17 @@ public class AdminService {
         claimsClient.deleteClaim(claimId);
     }
 
+    @CircuitBreaker(name = "claimsService", fallbackMethod = "getAllClaimsFallback")
+    public java.util.List<ClaimResponse> getAllClaims() {
+        log.info("Fetching all claims from claims-service");
+        return claimsClient.getAllClaims();
+    }
+
+    public java.util.List<ClaimResponse> getAllClaimsFallback(Throwable ex) {
+        log.error("Failed to fetch all claims: {}", ex.getMessage());
+        return java.util.Collections.emptyList();
+    }
+
     // ─── Claims Stats ────────────────────────────────────────────────────────
     @CircuitBreaker(name = "claimsService", fallbackMethod = "getClaimsStatsFallback")
     public Map<String, Long> getClaimsStats() {
@@ -69,6 +80,24 @@ public class AdminService {
     public Map<String, Long> getClaimsStatsFallback(Throwable ex) {
         log.error("Failed to fetch claims stats: {}", ex.getMessage());
         return Map.of("total", -1L, "pending", -1L, "approved", -1L, "rejected", -1L);
+    }
+    
+    // ─── Policy Creation (proxy to policy-service) ───────────────────────────
+    @CircuitBreaker(name = "policyService", fallbackMethod = "policyFallbackResponse")
+    public PolicyResponse createPolicy(PolicyUpdateRequest request) {
+        log.info("Admin creating new policy: {}", request.getName());
+        return policyClient.createPolicy(request);
+    }
+
+    @CircuitBreaker(name = "policyService", fallbackMethod = "getPoliciesFallback")
+    public java.util.List<PolicyResponse> getPolicies() {
+        log.info("Fetching all policies from policy-service for admin");
+        return policyClient.getPolicies();
+    }
+
+    public java.util.List<PolicyResponse> getPoliciesFallback(Throwable ex) {
+        log.error("Failed to fetch all policies: {}", ex.getMessage());
+        return java.util.Collections.emptyList();
     }
 
     // ─── Update Policy (proxy to policy-service) ─────────────────────────────

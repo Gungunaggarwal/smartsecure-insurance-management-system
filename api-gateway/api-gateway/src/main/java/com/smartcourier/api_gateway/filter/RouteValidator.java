@@ -11,6 +11,7 @@ public class RouteValidator {
     public static final List<String> openApiEndpoints = List.of(
             "/api/v1/auth/register",
             "/api/v1/auth/login",
+            "/api/v1/auth/user",
             "/eureka",
             "/v3/api-docs",
             "/swagger-ui",
@@ -19,6 +20,11 @@ public class RouteValidator {
     );
 
     public boolean isSecured(ServerHttpRequest request) {
+        // ✅ Allow all OPTIONS (Preflight) requests to pass through
+        if (request.getMethod().name().equals("OPTIONS")) {
+            return false;
+        }
+
         return openApiEndpoints
                 .stream()
                 .noneMatch(uri -> request.getURI().getPath().contains(uri));
