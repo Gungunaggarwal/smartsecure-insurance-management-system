@@ -3,7 +3,9 @@ package com.smartcourier.policy.service;
 import com.smartcourier.policy.dto.PolicyRequest;
 import com.smartcourier.policy.dto.PolicyResponse;
 import com.smartcourier.policy.entity.Policy;
+import com.smartcourier.policy.entity.UserPolicy;
 import com.smartcourier.policy.repository.PolicyRepository;
+import com.smartcourier.policy.repository.UserPolicyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -11,6 +13,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -19,8 +22,10 @@ import java.util.List;
 public class PolicyService {
 
     private final PolicyRepository policyRepository;
+    private final UserPolicyRepository userPolicyRepository;
 
     // ─── Create ──────────────────────────────────────────────────────────────
+    @CacheEvict(value = "policies", allEntries = true)
     public PolicyResponse createPolicy(PolicyRequest request) {
         log.info("Creating new policy: {} with type: {}", request.getName(), request.getType());
         Policy policy = Policy.builder()
@@ -30,7 +35,7 @@ public class PolicyService {
                 .type(request.getType() != null ? request.getType() : "GENERAL")
                 .build();
         Policy saved = policyRepository.save(policy);
-        log.info("Policy created successfully with ID: {}", saved.getId());
+        log.info("Policy created successfully with ID: {} and cache evicted", saved.getId());
         return mapToResponse(saved);
     }
 
@@ -84,13 +89,31 @@ public class PolicyService {
         return policy.getBasePremium().multiply(BigDecimal.valueOf(1.05));
     }
 
-    public String purchasePolicy(Long id) {
-        log.info("Purchasing policy ID: {}", id);
+    public String purchasePolicy(Long id, String username) {
+        log.info("User '{}' purchasing policy ID: {}", username, id);
         Policy policy = policyRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Policy not found with id: " + id));
         BigDecimal calculatedPremium = calculatePremium(id);
-        log.info("Policy '{}' purchased successfully for {}", policy.getName(), calculatedPremium);
+
+        // Record the purchase if a username is provided
+        if (username != null && !username.isBlank()) {
+            UserPolicy userPolicy = UserPolicy.builder()
+                    .username(username)
+                    .policy(policy)
+                    .purchasedAt(LocalDateTime.now())
+                    .build();
+            userPolicyRepository.save(userPolicy);
+            log.info("Purchase recorded for user '{}', policy '{}'.", username, policy.getName());
+        }
         return "Successfully purchased policy '" + policy.getName() + "' for amount: " + calculatedPremium;
+    }
+
+    // ─── Get Purchased Policies by Username ──────────────────────────────────
+    public List<PolicyResponse> getPoliciesByUsername(String username) {
+        log.info("Fetching purchased policies for user: {}", username);
+        return userPolicyRepository.findByUsername(username).stream()
+                .map(up -> mapToResponse(up.getPolicy()))
+                .toList();
     }
 
     // ─── Count ───────────────────────────────────────────────────────────────

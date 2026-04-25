@@ -12,6 +12,8 @@ public class RouteValidator {
             "/api/v1/auth/register",
             "/api/v1/auth/login",
             "/api/v1/auth/user",
+            "/api/v1/auth/send-otp",
+            "/api/v1/auth/verify-otp",
             "/eureka",
             "/v3/api-docs",
             "/swagger-ui",

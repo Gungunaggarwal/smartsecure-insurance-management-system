@@ -77,9 +77,9 @@ public class PolicyControllerTest {
 
     @Test
     void purchasePolicy_ShouldReturnOk() {
-        when(policyService.purchasePolicy(1L)).thenReturn("Success");
+        when(policyService.purchasePolicy(1L, "testuser")).thenReturn("Success");
 
-        ResponseEntity<String> response = policyController.purchasePolicy(1L);
+        ResponseEntity<String> response = policyController.purchasePolicy(1L, "testuser");
 
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());

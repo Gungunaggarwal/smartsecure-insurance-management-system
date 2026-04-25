@@ -1,5 +1,0 @@
-com\smartcourier\policy\PolicyServiceApplicationTest.class
-com\smartcourier\policy\service\PolicyServiceTest.class
-com\smartcourier\policy\PolicyServiceIntegrationTest.class
-com\smartcourier\policy\controller\PolicyControllerTest.class
-com\smartcourier\policy\exception\GlobalExceptionHandlerTest.class

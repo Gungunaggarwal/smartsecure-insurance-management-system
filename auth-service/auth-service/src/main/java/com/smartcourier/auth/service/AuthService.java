@@ -1,5 +1,7 @@
 package com.smartcourier.auth.service;
 
+import com.smartcourier.auth.exception.AuthException;
+
 import com.smartcourier.auth.dto.AuthResponse;
 import com.smartcourier.auth.dto.LoginRequest;
 import com.smartcourier.auth.dto.RegisterRequest;
@@ -23,17 +25,25 @@ public class AuthService {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
+    private final OtpService otpService;
 
     // ─── Register ────────────────────────────────────────────────────────────
     public AuthResponse register(RegisterRequest request) {
         log.info("Attempting to register new user: {}", request.getUsername());
+
+        // 🛡️ ENFORCE OTP VERIFICATION
+        if (!otpService.verifyOtp(request.getEmail(), request.getOtp())) {
+            log.warn("Registration failed: Invalid or expired OTP for email {}", request.getEmail());
+            throw new AuthException("Invalid or expired OTP code.");
+        }
+
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             log.warn("Registration failed: Username {} already taken", request.getUsername());
-            throw new RuntimeException("Username is already taken");
+            throw new AuthException("Username is already taken");
         }
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             log.warn("Registration failed: Email {} already registered", request.getEmail());
-            throw new RuntimeException("Email is already registered");
+            throw new AuthException("Email is already registered");
         }
         User user = User.builder()
                 .username(request.getUsername())
@@ -61,11 +71,11 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> {
                     log.warn("Login failed: User with email {} not found", request.getEmail());
-                    return new RuntimeException("Invalid email or password");
+                    return new AuthException("Invalid email or password");
                 });
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             log.warn("Login failed: Invalid password for email {}", request.getEmail());
-            throw new RuntimeException("Invalid email or password");
+            throw new AuthException("Invalid email or password");
         }
         log.info("User {} logged in successfully via email", user.getUsername());
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole());

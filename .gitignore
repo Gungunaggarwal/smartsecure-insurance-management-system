@@ -1,0 +1,59 @@
+# Databases
+*.db
+*.sqlite
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.restore
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Node / Angular
+node_modules/
+.angular/
+dist/
+/frontend/dist/
+browser/
+tmp/
+out/
+.npm/
+.eslintcache
+
+# Docker
+docker-compose.override.yml
+.docker/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Sonar
+.scannerwork/

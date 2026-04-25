@@ -27,5 +27,6 @@ export interface RegisterRequest {
   email: string;
   phone: string;
   address: string;
+  otp: string;
   role?: string;
 }

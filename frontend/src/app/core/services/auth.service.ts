@@ -58,6 +58,14 @@ export class AuthService {
     );
   }
 
+  sendOtp(email: string) {
+    return this.http.post<string>(`${this.apiUrl}/send-otp`, { email }, { responseType: 'text' as 'json' });
+  }
+
+  verifyOtp(email: string, otp: string) {
+    return this.http.post<boolean>(`${this.apiUrl}/verify-otp`, { email, otp });
+  }
+
   private setSession(res: AuthResponse) {
     localStorage.setItem('token', res.token);
     localStorage.setItem('username', res.username);

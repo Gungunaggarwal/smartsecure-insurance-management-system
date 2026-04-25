@@ -65,7 +65,7 @@ class PolicyServiceIntegrationTest {
         policy = policyRepository.save(policy);
 
         // 2. Purchase Policy
-        String result = policyService.purchasePolicy(policy.getId());
+        String result = policyService.purchasePolicy(policy.getId(), "testuser");
         assertTrue(result.contains("Successfully purchased policy 'Accident Shield'"));
     }
 }

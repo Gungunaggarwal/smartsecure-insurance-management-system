@@ -86,6 +86,14 @@ public class ClaimsService {
         log.info("Claim {} deleted successfully", id);
     }
 
+    // ─── Get All Claims (for Admin) ──────────────────────────────────────────
+    public List<ClaimResponse> getAllClaims() {
+        log.info("Fetching all claims (admin)");
+        return claimRepository.findAll().stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
     // ─── Count ───────────────────────────────────────────────────────────────
     public long countClaims() {
         return claimRepository.count();

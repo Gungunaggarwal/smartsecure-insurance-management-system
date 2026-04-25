@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.smartcourier.policy.controller.PolicyControllerTest
--------------------------------------------------------------------------------
-Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.844 s -- in com.smartcourier.policy.controller.PolicyControllerTest

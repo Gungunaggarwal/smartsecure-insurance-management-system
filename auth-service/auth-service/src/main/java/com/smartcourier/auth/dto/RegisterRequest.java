@@ -25,5 +25,8 @@ public class RegisterRequest {
     @NotBlank(message = "Address cannot be blank")
     private String address;
 
+    @NotBlank(message = "OTP cannot be blank")
+    private String otp;
+
     private String role; // optional, can default to USER
 }

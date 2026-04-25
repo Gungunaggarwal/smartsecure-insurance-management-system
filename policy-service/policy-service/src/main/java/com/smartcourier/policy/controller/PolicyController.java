@@ -52,9 +52,17 @@ public class PolicyController {
 
     /** Purchase policy — CUSTOMER ONLY */
     @PostMapping("/{id}/purchase")
-    public ResponseEntity<String> purchasePolicy(@PathVariable Long id) {
-        log.info("Received request to purchase policy ID: {}", id);
-        return ResponseEntity.ok(policyService.purchasePolicy(id));
+    public ResponseEntity<String> purchasePolicy(@PathVariable Long id,
+                                                  @RequestHeader(value = "X-Username", required = false) String username) {
+        log.info("Received request to purchase policy ID: {} by user: {}", id, username);
+        return ResponseEntity.ok(policyService.purchasePolicy(id, username));
+    }
+
+    /** Get purchased policies by username */
+    @GetMapping("/user/{username}")
+    public ResponseEntity<List<PolicyResponse>> getPoliciesByUsername(@PathVariable String username) {
+        log.info("Received request to fetch purchased policies for user: {}", username);
+        return ResponseEntity.ok(policyService.getPoliciesByUsername(username));
     }
 
     /** Count all policies */

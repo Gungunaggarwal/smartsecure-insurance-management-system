@@ -28,6 +28,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/dashboard/policy-list/policy-list.component').then(m => m.PolicyListComponent)
       },
       {
+        path: 'my-policies',
+        loadComponent: () => import('./pages/dashboard/purchased-policies/purchased-policies.component').then(m => m.PurchasedPoliciesComponent)
+      },
+      {
         path: 'claims',
         loadComponent: () => import('./pages/dashboard/claims-list/claims-list.component').then(m => m.ClaimsListComponent)
       },

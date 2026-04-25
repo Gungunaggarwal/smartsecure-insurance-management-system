@@ -33,6 +33,13 @@ public class ClaimsController {
                 HttpStatus.CREATED);
     }
 
+    /** Get all claims (used internally by admin-service via Feign) */
+    @GetMapping
+    public ResponseEntity<List<ClaimResponse>> getAllClaims() {
+        log.info("Received request to get all claims");
+        return ResponseEntity.ok(claimsService.getAllClaims());
+    }
+
     /** Get all claims for a specific user */
     @GetMapping("/user/{username}")
     public ResponseEntity<List<ClaimResponse>> getUserClaims(@PathVariable String username) {

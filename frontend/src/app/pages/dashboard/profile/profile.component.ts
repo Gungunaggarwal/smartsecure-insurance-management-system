@@ -12,147 +12,273 @@ import { RegisterRequest } from '../../../models/auth.model';
   template: `
     <div class="profile-page animate-fade">
       <header class="page-header">
-        <h1>User <span class="gradient-text">Profile</span></h1>
-        <p>View and manage your account information.</p>
+        <div class="header-content">
+          <h1>Member <span class="gradient-text">Profile</span></h1>
+          <p>Securely manage your personal information and account security.</p>
+        </div>
       </header>
 
-      <div class="profile-grid">
-        <div class="glass-card profile-card">
-          <div class="profile-avatar">
-            {{ getInitials() }}
-          </div>
-          <h2 class="user-name">{{ authService.currentUser()?.name }}</h2>
-          <span class="user-role badge">{{ authService.currentUser()?.role }}</span>
-          
-          <div class="profile-stats">
-            <div class="stat">
-              <span class="stat-lbl">Joined</span>
-              <span class="stat-val">April 2026</span>
+      <div class="profile-layout">
+        <!-- Personal ID Card -->
+        <div class="glass-card identity-card">
+          <div class="identity-header">
+            <div class="user-avatar-lg">
+              <div class="avatar-shimmer"></div>
+              <span>{{ getInitials() }}</span>
             </div>
-            <div class="stat">
-              <span class="stat-lbl">Status</span>
-              <span class="stat-val text-success">Active</span>
+            <div class="identity-info">
+              <h2 class="user-name">{{ authService.currentUser()?.name }}</h2>
+              <div class="role-badge" [class.admin]="authService.isAdmin()">
+                 <i class="fas" [class.fa-user-shield]="authService.isAdmin()" [class.fa-user]="!authService.isAdmin()"></i>
+                 {{ authService.currentUser()?.role }}
+              </div>
+            </div>
+          </div>
+          
+          <div class="identity-divider"></div>
+          
+          <div class="identity-details">
+            <div class="id-stat">
+              <span class="stat-label">Member ID</span>
+              <span class="stat-value">#{{ authService.currentUser()?.username }}</span>
+            </div>
+            <div class="id-stat">
+              <span class="stat-label">Account Status</span>
+              <span class="stat-value status-active">Verified</span>
+            </div>
+            <div class="id-stat">
+              <span class="stat-label">Member Since</span>
+              <span class="stat-value">April 22</span>
+            </div>
+          </div>
+
+          <div class="identity-security">
+            <div class="security-item">
+              <i class="fas fa-shield-check text-teal"></i>
+              <span>Two-Factor Auth Enabled</span>
             </div>
           </div>
         </div>
 
-        <div class="glass-card edit-section">
-          <h3>Edit Details</h3>
-          <form [formGroup]="profileForm" (ngSubmit)="onUpdate()">
+        <!-- Edit Form -->
+        <div class="glass-card settings-card">
+          <div class="settings-header">
+            <div class="settings-icon"><i class="fas fa-cog"></i></div>
+            <div class="settings-title">
+              <h3>Account Settings</h3>
+              <p>Updates to your profile will be reflected across all services.</p>
+            </div>
+          </div>
+
+          <form [formGroup]="profileForm" (ngSubmit)="onUpdate()" class="settings-form">
             <div class="form-row">
               <div class="form-group half">
                 <label class="form-label">Full Name</label>
-                <input type="text" formControlName="name" class="form-control">
+                <div class="input-wrapper">
+                  <i class="fas fa-user input-icon"></i>
+                  <input type="text" formControlName="name" class="form-control with-icon" placeholder="Name">
+                </div>
               </div>
               <div class="form-group half">
                 <label class="form-label">Username</label>
-                <input type="text" formControlName="username" class="form-control" readonly>
+                <div class="input-wrapper">
+                  <i class="fas fa-id-card input-icon"></i>
+                  <input type="text" formControlName="username" class="form-control with-icon readonly" readonly>
+                </div>
               </div>
             </div>
 
             <div class="form-group">
               <label class="form-label">Email Address</label>
-              <input type="email" formControlName="email" class="form-control">
+              <div class="input-wrapper">
+                <i class="fas fa-envelope input-icon"></i>
+                <input type="email" formControlName="email" class="form-control with-icon" placeholder="Email">
+              </div>
             </div>
 
             <div class="form-row">
               <div class="form-group half">
                 <label class="form-label">Phone Number</label>
-                <input type="text" formControlName="phone" class="form-control">
+                <div class="input-wrapper">
+                  <i class="fas fa-phone input-icon"></i>
+                  <input type="text" formControlName="phone" class="form-control with-icon" placeholder="Phone">
+                </div>
               </div>
               <div class="form-group half">
-                <label class="form-label">Role</label>
-                <input type="text" formControlName="role" class="form-control" readonly>
+                <label class="form-label">Account Role</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-user-tag input-icon"></i>
+                  <input type="text" formControlName="role" class="form-control with-icon readonly" readonly>
+                </div>
               </div>
             </div>
 
             <div class="form-group">
-              <label class="form-label">Address</label>
-              <textarea formControlName="address" class="form-control" rows="3"></textarea>
+              <label class="form-label">Primary Address</label>
+              <div class="input-wrapper">
+                <i class="fas fa-map-marker-alt input-icon" style="top: 1.25rem; transform: none;"></i>
+                <textarea formControlName="address" class="form-control with-icon" rows="3" placeholder="Address"></textarea>
+              </div>
             </div>
 
-            <button type="submit" class="btn btn-primary" [disabled]="profileForm.invalid || isLoading()">
-              {{ isLoading() ? 'Saving Changes...' : 'Update Profile' }}
-            </button>
+            <div class="form-footer">
+               <button type="submit" class="btn btn-primary save-btn" [disabled]="profileForm.invalid || isLoading()">
+                <span *ngIf="!isLoading()">Save Changes <i class="fas fa-save"></i></span>
+                <span *ngIf="isLoading()"><i class="fas fa-spinner fa-spin"></i> Syncing...</span>
+              </button>
+            </div>
           </form>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .profile-page { padding: 1rem 0; }
-    .page-header { margin-bottom: 3rem; }
+    .profile-page {
+      padding: 1.5rem 0 3rem;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
 
-    .profile-grid {
+    .page-header { margin-bottom: 3.5rem; }
+    .header-content h1 { font-size: 3rem; margin-bottom: 0.5rem; }
+    .header-content p { color: var(--text-secondary); font-size: 1.1rem; }
+
+    .profile-layout {
       display: grid;
-      grid-template-columns: 350px 1fr;
-      gap: 2rem;
+      grid-template-columns: 380px 1fr;
+      gap: 2.5rem;
       align-items: flex-start;
     }
 
-    .profile-card {
+    /* Identity Card */
+    .identity-card {
       padding: 3rem 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: linear-gradient(180deg, rgba(15, 21, 32, 0.9) 0%, rgba(26, 32, 44, 0.6) 100%);
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .identity-header {
       text-align: center;
+      margin-bottom: 2.5rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 1.5rem;
     }
 
-    .profile-avatar {
-      width: 100px;
-      height: 100px;
+    .user-avatar-lg {
+      width: 120px; height: 120px;
+      border-radius: 40px;
       background: linear-gradient(135deg, var(--accent-teal), var(--accent-violet));
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.5rem;
-      font-weight: 800;
-      color: #000;
-      box-shadow: 0 0 30px rgba(0, 212, 170, 0.3);
+      color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3.5rem; font-weight: 800;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 15px 35px rgba(0, 212, 170, 0.2);
     }
 
-    .user-name { font-size: 1.75rem; margin-bottom: 0.25rem; }
-    .badge {
-      background: rgba(124, 58, 237, 0.1);
-      color: var(--accent-violet);
-      padding: 0.35rem 1rem;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      border: 1px solid rgba(124, 58, 237, 0.2);
+    .avatar-shimmer {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%);
+      background-size: 200% 200%;
+      animation: shimmer 3s infinite;
     }
 
-    .profile-stats {
+    .identity-info { display: flex; flex-direction: column; gap: 0.5rem; align-items: center; }
+    .user-name { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; }
+    
+    .role-badge {
+      display: flex; align-items: center; gap: 0.5rem;
+      background: rgba(255,255,255,0.05);
+      padding: 0.4rem 1rem;
+      border-radius: 30px;
+      font-size: 0.75rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--accent-blue);
+      border: 1px solid rgba(88, 166, 255, 0.2);
+    }
+    .role-badge.admin { color: var(--accent-violet); border-color: rgba(124, 58, 237, 0.2); }
+
+    .identity-divider {
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+      margin-bottom: 2rem;
+    }
+
+    .identity-details {
       width: 100%;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-top: 2rem;
-      padding-top: 2rem;
-      border-top: 1px solid var(--glass-border);
+      display: grid; grid-template-columns: 1fr; gap: 1.5rem;
+      margin-bottom: 2.5rem;
     }
 
-    .stat-lbl { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; }
-    .stat-val { display: block; font-weight: 600; margin-top: 0.25rem; }
-    .text-success { color: var(--accent-teal); }
+    .id-stat { display: flex; justify-content: space-between; align-items: center; }
+    .stat-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+    .stat-value { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+    .stat-value.status-active { color: var(--accent-teal); }
 
-    .edit-section { padding: 2.5rem; }
-    .edit-section h3 { margin-bottom: 2rem; font-size: 1.5rem; }
+    .identity-security {
+      width: 100%;
+      padding: 1.25rem;
+      background: rgba(0, 212, 170, 0.03);
+      border-radius: 16px;
+      border: 1px solid rgba(0, 212, 170, 0.1);
+    }
+    .security-item { display: flex; align-items: center; gap: 0.75rem; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); }
+    .text-teal { color: var(--accent-teal); }
 
-    .form-row { display: flex; gap: 1.5rem; margin-bottom: 1rem; }
+    /* Settings Card */
+    .settings-card { padding: 3rem 4rem; }
+
+    .settings-header {
+      display: flex; align-items: center; gap: 1.5rem;
+      margin-bottom: 3.5rem;
+    }
+    .settings-icon {
+      width: 54px; height: 54px; border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; color: var(--text-secondary);
+    }
+    .settings-title h3 { font-size: 1.6rem; margin-bottom: 0.25rem; }
+    .settings-title p { color: var(--text-secondary); font-size: 0.9rem; }
+
+    .settings-form { display: flex; flex-direction: column; gap: 1rem; }
+    .form-row { display: flex; gap: 2rem; }
     .half { flex: 1; }
 
-    .form-control[readonly] {
+    .input-wrapper { position: relative; }
+    .input-icon {
+      position: absolute; left: 1.125rem; top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted); font-size: 0.9rem;
+      transition: var(--transition); pointer-events: none;
+    }
+    .form-control.with-icon { padding-left: 3rem; }
+    .form-control.with-icon:focus + .input-icon { color: var(--accent-teal); }
+
+    .form-control.readonly {
       background: rgba(255, 255, 255, 0.02);
+      border-color: rgba(255, 255, 255, 0.05);
       color: var(--text-muted);
       cursor: not-allowed;
     }
 
-    @media (max-width: 900px) {
-      .profile-grid { grid-template-columns: 1fr; }
+    .form-footer {
+      margin-top: 2rem;
+      display: flex; justify-content: flex-end;
+    }
+    .save-btn { padding: 1.1rem 3rem; font-size: 1rem; border-radius: 12px; }
+
+    @media (max-width: 1024px) {
+      .profile-layout { grid-template-columns: 1fr; }
+      .settings-card { padding: 2.5rem 2rem; }
+    }
+    @media (max-width: 600px) {
+      .form-row { flex-direction: column; gap: 1rem; }
     }
   `]
 })

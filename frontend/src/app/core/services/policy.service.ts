@@ -39,4 +39,8 @@ export class PolicyService {
   countPoliciesByType(type: string): Observable<number> {
     return this.http.get<number>(`${this.apiUrl}/count/type/${type}`);
   }
+
+  getPurchasedPolicies(username: string): Observable<PolicyResponse[]> {
+    return this.http.get<PolicyResponse[]>(`${this.apiUrl}/user/${username}`);
+  }
 }

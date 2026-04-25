@@ -24,6 +24,9 @@ public class PolicyServiceTest {
     @Mock
     private PolicyRepository policyRepository;
 
+    @Mock
+    private com.smartcourier.policy.repository.UserPolicyRepository userPolicyRepository;
+
     @InjectMocks
     private PolicyService policyService;
 
@@ -75,10 +78,11 @@ public class PolicyServiceTest {
     void purchasePolicy_ShouldReturnSuccessMessage() {
         when(policyRepository.findById(1L)).thenReturn(Optional.of(testPolicy));
 
-        String result = policyService.purchasePolicy(1L);
+        String result = policyService.purchasePolicy(1L, "testuser");
 
         assertTrue(result.contains("Successfully purchased policy 'Test Policy' for amount:"));
-        verify(policyRepository, times(2)).findById(1L); // Called in purchasePolicy and calculatePremium
+        verify(policyRepository, times(2)).findById(1L); 
+        verify(userPolicyRepository, times(1)).save(any(com.smartcourier.policy.entity.UserPolicy.class));
     }
 
     @Test
@@ -104,7 +108,7 @@ public class PolicyServiceTest {
     void purchasePolicy_NotFound_ShouldThrow() {
         when(policyRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> policyService.purchasePolicy(99L));
+        assertThrows(RuntimeException.class, () -> policyService.purchasePolicy(99L, "testuser"));
     }
 
     @Test

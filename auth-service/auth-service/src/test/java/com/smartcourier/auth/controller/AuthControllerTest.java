@@ -29,6 +29,9 @@ class AuthControllerTest {
     @MockBean
     private AuthService authService;
 
+    @MockBean
+    private com.smartcourier.auth.service.OtpService otpService;
+
     @Autowired
     private ObjectMapper objectMapper;
 

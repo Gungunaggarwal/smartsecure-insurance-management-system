@@ -79,6 +79,11 @@ services:
       - ./config-repo/config-repo:/app/config-repo
     networks:
       - courier-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8888/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   api-gateway:
     build:
@@ -89,7 +94,7 @@ services:
       - "8090:8090"
     depends_on:
       config-server:
-        condition: service_started
+        condition: service_healthy
       zipkin:
         condition: service_started
     environment:
@@ -99,6 +104,11 @@ services:
       MANAGEMENT_TRACING_SAMPLING_PROBABILITY: 1.0
     networks:
       - courier-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8090/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # ─── Business Services ─────────────────────────────────────────────────────
   auth-service:
@@ -112,7 +122,7 @@ services:
       postgres:
         condition: service_started
       config-server:
-        condition: service_started
+        condition: service_healthy
       redis:
         condition: service_started
       zipkin:
@@ -125,10 +135,21 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_DATA_REDIS_HOST: redis
+      SPRING_MAIL_HOST: smtp.gmail.com
+      SPRING_MAIL_PORT: 587
+      SPRING_MAIL_USERNAME: ${MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${MAIL_PASSWORD}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
       MANAGEMENT_TRACING_SAMPLING_PROBABILITY: 1.0
     networks:
       - courier-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8083/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   policy-service:
     build:
@@ -141,7 +162,7 @@ services:
       postgres:
         condition: service_started
       config-server:
-        condition: service_started
+        condition: service_healthy
       redis:
         condition: service_started
       zipkin:
@@ -158,6 +179,11 @@ services:
       MANAGEMENT_TRACING_SAMPLING_PROBABILITY: 1.0
     networks:
       - courier-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8084/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   claims-service:
     build:
@@ -170,7 +196,7 @@ services:
       postgres:
         condition: service_started
       config-server:
-        condition: service_started
+        condition: service_healthy
       rabbitmq:
         condition: service_started
       zipkin:
@@ -187,6 +213,11 @@ services:
       MANAGEMENT_TRACING_SAMPLING_PROBABILITY: 1.0
     networks:
       - courier-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8089/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   admin-service:
     build:
@@ -197,7 +228,7 @@ services:
       - "8087:8087"
     depends_on:
       config-server:
-        condition: service_started
+        condition: service_healthy
       rabbitmq:
         condition: service_started
       zipkin:
@@ -209,6 +240,47 @@ services:
       SPRING_RABBITMQ_HOST: rabbitmq
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
       MANAGEMENT_TRACING_SAMPLING_PROBABILITY: 1.0
+    networks:
+      - courier-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8087/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Application Interface ────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: insurance-frontend
+    ports:
+      - "5000:80"
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - courier-network
+
+  maildev:
+    image: maildev/maildev
+    container_name: mail-testing
+    ports:
+      - "1080:1080"
+      - "1025:1025"
+    networks:
+      - courier-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin-ui
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@smartsecure.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
     networks:
       - courier-network
 

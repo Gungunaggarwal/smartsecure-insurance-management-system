@@ -5,12 +5,15 @@ import com.smartcourier.auth.dto.LoginRequest;
 import com.smartcourier.auth.dto.RegisterRequest;
 import com.smartcourier.auth.dto.UserResponse;
 import com.smartcourier.auth.service.AuthService;
+import com.smartcourier.auth.service.OtpService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -19,6 +22,29 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final OtpService otpService;
+
+    /** Send OTP to email before registration */
+    @PostMapping("/send-otp")
+    public ResponseEntity<String> sendOtp(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body("Email is required");
+        }
+        log.info("OTP send requested for email: {}", email);
+        otpService.sendOtp(email);
+        return ResponseEntity.ok("OTP sent to " + email);
+    }
+
+    /** Verify OTP submitted by user */
+    @PostMapping("/verify-otp")
+    public ResponseEntity<Boolean> verifyOtp(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        String otp   = body.get("otp");
+        log.info("OTP verify requested for email: {}", email);
+        boolean valid = otpService.verifyOtp(email, otp);
+        return ResponseEntity.ok(valid);
+    }
 
     /** Register a new user */
     @PostMapping("/register")

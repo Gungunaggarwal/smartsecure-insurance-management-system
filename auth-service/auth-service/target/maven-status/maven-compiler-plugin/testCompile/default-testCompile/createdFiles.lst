@@ -1,6 +1,0 @@
-com\smartcourier\auth\service\AuthServiceTest.class
-com\smartcourier\auth\AuthServiceIntegrationTest.class
-com\smartcourier\auth\AuthServiceApplicationTest.class
-com\smartcourier\auth\exception\GlobalExceptionHandlerTest.class
-com\smartcourier\auth\controller\AuthControllerTest.class
-com\smartcourier\auth\util\JwtUtilTest.class
