@@ -28,8 +28,12 @@ class AuthServiceIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
+    @org.springframework.boot.test.mock.mockito.MockBean
+    private com.smartcourier.auth.service.OtpService otpService;
+
     @BeforeEach
     void setUp() {
+        org.mockito.Mockito.when(otpService.verifyOtp(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.any())).thenReturn(true);
         userRepository.deleteAll();
     }
 

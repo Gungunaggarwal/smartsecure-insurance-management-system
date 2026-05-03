@@ -25,8 +25,17 @@ class ClaimsServiceIntegrationTest {
     @Autowired
     private ClaimRepository claimRepository;
 
+    @org.springframework.boot.test.mock.mockito.MockBean
+    private com.smartcourier.claims.feign.PolicyClient policyClient;
+
     @BeforeEach
     void setUp() {
+        // Stub PolicyClient to return a map containing the policyId used in tests
+        java.util.Map<String, Object> mockPolicy = new java.util.HashMap<>();
+        mockPolicy.put("id", 1L);
+        org.mockito.Mockito.when(policyClient.getPoliciesByUsername(org.mockito.ArgumentMatchers.anyString()))
+            .thenReturn(java.util.List.of(mockPolicy));
+            
         claimRepository.deleteAll();
     }
 
