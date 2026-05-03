@@ -27,6 +27,9 @@ public class ClaimsServiceTest {
     @Mock
     private FileStorageUtil fileStorageUtil;
 
+    @Mock
+    private com.smartcourier.claims.feign.PolicyClient policyClient;
+
     @InjectMocks
     private ClaimsService claimsService;
 
@@ -50,6 +53,11 @@ public class ClaimsServiceTest {
     @Test
     void initiateClaimWithDoc_ShouldUploadFileAndSaveClaim() {
         MultipartFile file = new MockMultipartFile("file", "test.pdf", "application/pdf", "content".getBytes());
+
+        // Stub policy ownership validation
+        java.util.Map<String, Object> mockPolicy = new java.util.HashMap<>();
+        mockPolicy.put("id", 10L);
+        when(policyClient.getPoliciesByUsername("testusr")).thenReturn(java.util.List.of(mockPolicy));
 
         when(fileStorageUtil.storeFile(file, "testusr")).thenReturn("/tmp/uploads/test.pdf");
         when(claimRepository.save(any(Claim.class))).thenReturn(testClaim);
