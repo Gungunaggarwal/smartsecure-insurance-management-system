@@ -176,6 +176,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_DATA_REDIS_HOST: redis
       MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
       MANAGEMENT_TRACING_SAMPLING_PROBABILITY: 1.0
     networks:
       - courier-network
@@ -213,6 +215,8 @@ services:
       MANAGEMENT_TRACING_SAMPLING_PROBABILITY: 1.0
     networks:
       - courier-network
+    volumes:
+      - claim_uploads:/app/uploads
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8089/actuator/health"]
       interval: 10s
@@ -336,3 +340,4 @@ volumes:
   sonarqube_logs:
   sonarqube_extensions:
   sonarqube_db_data:
+  claim_uploads:

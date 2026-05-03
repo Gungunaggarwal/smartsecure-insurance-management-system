@@ -40,6 +40,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/dashboard/claim-form/claim-form.component').then(m => m.ClaimFormComponent)
       },
       {
+        path: 'claims/:id',
+        loadComponent: () => import('./pages/dashboard/claim-details/claim-details.component').then(m => m.ClaimDetailsComponent)
+      },
+      {
         path: 'profile',
         loadComponent: () => import('./pages/dashboard/profile/profile.component').then(m => m.ProfileComponent)
       }

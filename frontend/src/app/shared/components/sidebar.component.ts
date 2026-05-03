@@ -128,6 +128,7 @@ import { AuthService } from '../../core/services/auth.service';
       <div class="sidebar-footer">
         <button class="collapse-btn" (click)="toggleCollapse()" [title]="isCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'">
           <i class="fas" [class.fa-chevron-left]="!isCollapsed()" [class.fa-chevron-right]="isCollapsed()"></i>
+          <span class="btn-text" *ngIf="!isCollapsed()">Collapse Sidebar</span>
         </button>
       </div>
     </aside>
@@ -349,15 +350,25 @@ import { AuthService } from '../../core/services/auth.service';
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid var(--glass-border);
       color: var(--text-secondary);
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
+      min-width: 36px;
+      height: 40px;
+      padding: 0 0.875rem;
+      border-radius: 12px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
+      gap: 0.75rem;
       font-size: 0.8rem;
       transition: var(--transition);
+      white-space: nowrap;
+    }
+
+    .btn-text {
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.75rem;
     }
 
     .collapse-btn:hover {

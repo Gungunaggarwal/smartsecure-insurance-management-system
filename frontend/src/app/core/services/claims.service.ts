@@ -49,4 +49,8 @@ export class ClaimsService {
   countClaimsByStatus(status: string): Observable<number> {
     return this.http.get<number>(`${this.apiUrl}/count/status/${status}`);
   }
+
+  downloadDocument(id: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${id}/document`, { responseType: 'blob' });
+  }
 }

@@ -61,7 +61,7 @@ import { forkJoin } from 'rxjs';
           <div class="pill-icon green"><i class="fas fa-user-shield"></i></div>
           <div class="pill-data">
             <span class="p-value highlight">Verified</span>
-            <span class="p-label">Trust Score: 98</span>
+            <span class="p-label">Account Status</span>
           </div>
         </div>
       </div>

@@ -38,6 +38,10 @@ export class AdminService {
     return this.http.get<ClaimResponse[]>(`${this.apiUrl}/claims`);
   }
 
+  viewDocument(id: number): Observable<Blob> {
+    return this.http.get(`${environment.apiUrl}/api/v1/claims/${id}/document`, { responseType: 'blob' });
+  }
+
   getPolicies(): Observable<PolicyResponse[]> {
     return this.http.get<PolicyResponse[]>(`${this.apiUrl}/policies`);
   }

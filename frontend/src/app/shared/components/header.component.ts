@@ -30,8 +30,9 @@ import { RouterModule } from '@angular/router';
           
           <div class="header-divider"></div>
           
-          <button (click)="authService.logout()" class="btn-logout" title="Logout">
+          <button (click)="authService.logout()" class="btn-logout-labeled" title="Logout">
             <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
           </button>
         </ng-container>
       </div>
@@ -114,31 +115,38 @@ import { RouterModule } from '@angular/router';
       background: var(--glass-border);
     }
 
-    .btn-logout {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: rgba(255, 68, 68, 0.05);
-      border: 1px solid transparent;
-      color: var(--accent-red);
+    .btn-logout-labeled {
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 0.75rem;
+      padding: 0.6rem 1.25rem;
+      border-radius: 12px;
+      background: rgba(255, 68, 68, 0.08);
+      border: 1px solid rgba(255, 68, 68, 0.1);
+      color: #ff4444;
       cursor: pointer;
-      transition: var(--transition);
-      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
-    .btn-logout:hover {
-      background: rgba(255, 68, 68, 0.15);
-      border-color: rgba(255, 68, 68, 0.3);
+    .btn-logout-labeled:hover {
+      background: #ff4444;
+      color: white;
+      border-color: #ff4444;
+      box-shadow: 0 4px 15px rgba(255, 68, 68, 0.3);
       transform: translateY(-2px);
     }
 
+    .btn-logout-labeled i { font-size: 1rem; }
+
     @media (max-width: 768px) {
       .app-header { margin: 1rem; }
-      .chip-name, .chip-role { display: none; }
+      .chip-name, .chip-role, .btn-logout-labeled span { display: none; }
       .user-chip { padding: 0; background: none; border: none; }
+      .btn-logout-labeled { padding: 0.6rem; }
     }
   `]
 })

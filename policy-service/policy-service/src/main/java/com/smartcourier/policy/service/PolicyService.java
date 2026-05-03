@@ -46,6 +46,13 @@ public class PolicyService {
         return policyRepository.findAll().stream().map(this::mapToResponse).toList();
     }
 
+    public PolicyResponse getPolicyById(Long id) {
+        log.info("Fetching policy details for ID: {}", id);
+        Policy policy = policyRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Policy not found with id: " + id));
+        return mapToResponse(policy);
+    }
+
     // ─── Update ──────────────────────────────────────────────────────────────
     @CacheEvict(value = {"policies", "premium"}, allEntries = true)
     public PolicyResponse updatePolicy(Long id, PolicyRequest request) {

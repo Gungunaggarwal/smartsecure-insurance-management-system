@@ -34,6 +34,13 @@ public class PolicyController {
         return ResponseEntity.ok(policyService.getPolicies());
     }
 
+    /** Get single policy by ID */
+    @GetMapping("/{id}")
+    public ResponseEntity<PolicyResponse> getPolicyById(@PathVariable Long id) {
+        log.info("Received request to get policy ID: {}", id);
+        return ResponseEntity.ok(policyService.getPolicyById(id));
+    }
+
     /** Update policy — ADMIN ONLY */
     @PutMapping("/{id}")
     public ResponseEntity<PolicyResponse> updatePolicy(@PathVariable Long id,

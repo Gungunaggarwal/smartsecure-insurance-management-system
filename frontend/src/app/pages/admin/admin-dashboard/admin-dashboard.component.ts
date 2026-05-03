@@ -99,6 +99,7 @@ import { ToastService } from '../../../core/services/toast.service';
                   <th>Requester</th>
                   <th>Policy ID</th>
                   <th>Overview</th>
+                  <th>Evidence</th>
                   <th>Status</th>
                   <th class="text-right">Operations</th>
                 </tr>
@@ -115,6 +116,12 @@ import { ToastService } from '../../../core/services/toast.service';
                   <td><span class="policy-tag">POL-{{ claim.policyId }}</span></td>
                   <td class="cell-desc"><span [title]="claim.description">{{ claim.description }}</span></td>
                   <td>
+                    <button *ngIf="claim.documentPath" class="btn-doc" (click)="viewDocument(claim.id)">
+                       <i class="fas fa-file-alt"></i> View Doc
+                    </button>
+                    <span *ngIf="!claim.documentPath" class="no-doc">None</span>
+                 </td>
+                  <td>
                     <span class="status-chip" [class]="claim.status.toLowerCase()">
                        <i class="fas" [class.fa-clock]="claim.status === 'PENDING'" 
                                     [class.fa-check]="claim.status === 'APPROVED'" 
@@ -124,21 +131,21 @@ import { ToastService } from '../../../core/services/toast.service';
                   </td>
                   <td class="cell-actions">
                       <div class="action-group" *ngIf="claim.status === 'PENDING'">
-                        <button class="circle-btn approve" (click)="reviewClaim(claim.id, 'APPROVED')" title="Approve Claim">
-                           <i class="fas fa-check"></i>
+                        <button class="action-btn approve" (click)="reviewClaim(claim.id, 'APPROVED')">
+                           <i class="fas fa-check"></i> Approve
                         </button>
-                        <button class="circle-btn reject" (click)="reviewClaim(claim.id, 'REJECTED')" title="Reject Claim">
-                           <i class="fas fa-times"></i>
+                        <button class="action-btn reject" (click)="reviewClaim(claim.id, 'REJECTED')">
+                           <i class="fas fa-times"></i> Reject
                         </button>
-                     </div>
-                     <div class="action-group" *ngIf="claim.status !== 'PENDING'">
+                      </div>
+                      <div class="action-group" *ngIf="claim.status !== 'PENDING'">
                         <span class="processed-tag">
                            <i class="fas fa-check-double"></i> Processed
                         </span>
-                        <button class="circle-btn delete-mini" (click)="deleteClaim(claim.id)" title="Delete Record">
-                           <i class="fas fa-trash-alt"></i>
+                        <button class="action-btn delete" (click)="deleteClaim(claim.id)">
+                           <i class="fas fa-trash-alt"></i> Delete
                         </button>
-                     </div>
+                      </div>
                   </td>
                 </tr>
               </tbody>
@@ -349,18 +356,78 @@ import { ToastService } from '../../../core/services/toast.service';
     .status-chip.approved { background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid rgba(34,197,94,0.2); }
     .status-chip.rejected { background: rgba(255,68,68,0.1); color: var(--accent-red); border: 1px solid rgba(255,68,68,0.2); }
 
-    .action-group { display: flex; gap: 0.5rem; }
-    .circle-btn {
-      width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; transition: var(--transition);
+    .btn-doc {
+      background: rgba(0, 212, 170, 0.05); border: 1px solid rgba(0, 212, 170, 0.2);
+      color: var(--accent-teal); padding: 0.3rem 0.6rem; border-radius: 6px;
+      font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: var(--transition);
+      display: flex; align-items: center; gap: 0.4rem;
     }
-    .circle-btn.approve { background: rgba(34, 197, 94, 0.1); color: var(--accent-green); }
-    .circle-btn.approve:hover { background: var(--accent-green); color: white; transform: rotate(15deg); }
-    .circle-btn.reject { background: rgba(255, 68, 68, 0.1); color: var(--accent-red); }
-    .circle-btn.reject:hover { background: var(--accent-red); color: white; transform: rotate(-15deg); }
-    .circle-btn.delete-mini { background: rgba(255, 68, 68, 0.05); color: var(--accent-red); margin-left: 0.5rem; }
-    .circle-btn.delete-mini:hover { background: var(--accent-red); color: white; }
-    
+    .btn-doc:hover { background: var(--accent-teal); color: white; }
+    .no-doc { font-size: 0.75rem; color: var(--text-muted); font-style: italic; }
+
+    .action-group {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-secondary);
+      backdrop-filter: blur(4px);
+    }
+
+    /* Approve Button Vibe */
+    .action-btn.approve {
+      border-color: rgba(34, 197, 94, 0.3);
+      color: #4ade80;
+    }
+    .action-btn.approve:hover {
+      background: rgba(34, 197, 94, 0.15);
+      border-color: #22c55e;
+      color: white;
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+      transform: translateY(-2px) scale(1.05);
+    }
+
+    /* Reject Button Vibe */
+    .action-btn.reject {
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+    .action-btn.reject:hover {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: #ef4444;
+      color: white;
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+      transform: translateY(-2px) scale(1.05);
+    }
+
+    /* Delete Button Vibe */
+    .action-btn.delete {
+      border-color: rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+    }
+    .action-btn.delete:hover {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: #ef4444;
+      color: #f87171;
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+      transform: translateY(-2px);
+    }
+
     .processed-tag { font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.4rem; font-weight: 600; }
     .text-right { text-align: right; }
 
@@ -548,6 +615,16 @@ export class AdminDashboardComponent implements OnInit {
         this.toastService.show('Action failed. Please try again.', 'error');
         console.error(err);
       }
+    });
+  }
+
+  viewDocument(id: number) {
+    this.adminService.viewDocument(id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      },
+      error: () => this.toastService.show('Failed to load document.', 'error')
     });
   }
 

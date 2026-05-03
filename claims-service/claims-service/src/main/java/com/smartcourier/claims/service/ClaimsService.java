@@ -3,13 +3,20 @@ package com.smartcourier.claims.service;
 import com.smartcourier.claims.dto.ClaimResponse;
 import com.smartcourier.claims.entity.Claim;
 import com.smartcourier.claims.repository.ClaimRepository;
+import com.smartcourier.claims.feign.PolicyClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -19,12 +26,36 @@ public class ClaimsService {
 
     private final ClaimRepository claimRepository;
     private final FileStorageUtil fileStorageUtil;
+    private final PolicyClient policyClient;
 
     // ─── Initiate Claim With Document Upload ─────────────────────────────────
     @Transactional
     public ClaimResponse initiateClaimWithDoc(MultipartFile file, Long policyId,
                                                String description, String username) {
-        log.info("Initiating claim with document upload for user: {}", username);
+        log.info("Initiating claim with document upload for user: {} and policy: {}", username, policyId);
+        
+        // 🛡️ VALIDATE POLICY OWNERSHIP (User must have purchased this policy)
+        try {
+            List<Object> userPolicies = policyClient.getPoliciesByUsername(username);
+            boolean ownsPolicy = userPolicies.stream()
+                .anyMatch(p -> {
+                    if (p instanceof Map) {
+                        Object id = ((Map<?, ?>) p).get("id");
+                        return id != null && id.toString().equals(policyId.toString());
+                    }
+                    return false;
+                });
+
+            if (!ownsPolicy) {
+                log.warn("Claim failed: User {} does not own policy ID {}", username, policyId);
+                throw new RuntimeException("You can only file claims for policies you have purchased.");
+            }
+        } catch (Exception e) {
+            if (e instanceof RuntimeException && e.getMessage().contains("purchased")) throw e;
+            log.error("Validation error: {}", e.getMessage());
+            throw new RuntimeException("Validation failed. Please ensure you own this policy.");
+        }
+
         String documentPath = fileStorageUtil.storeFile(file, username);
         String idempotencyKey = UUID.randomUUID().toString();
 
@@ -101,6 +132,27 @@ public class ClaimsService {
 
     public long countClaimsByStatus(String status) {
         return claimRepository.countByStatus(status);
+    }
+
+    public Resource getDocumentResource(Long id) {
+        Claim claim = claimRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Claim not found"));
+        
+        if (claim.getDocumentPath() == null) {
+            throw new RuntimeException("No document attached to this claim");
+        }
+
+        try {
+            Path filePath = Paths.get(claim.getDocumentPath());
+            Resource resource = new UrlResource(filePath.toUri());
+            if (resource.exists() || resource.isReadable()) {
+                return resource;
+            } else {
+                throw new RuntimeException("Could not read the file!");
+            }
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Error: " + e.getMessage());
+        }
     }
 
     // ─── Helper ──────────────────────────────────────────────────────────────

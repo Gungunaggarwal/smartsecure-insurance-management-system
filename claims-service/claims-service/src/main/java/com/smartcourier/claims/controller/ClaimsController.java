@@ -4,12 +4,17 @@ import com.smartcourier.claims.dto.ClaimResponse;
 import com.smartcourier.claims.service.ClaimsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 @Slf4j
@@ -84,5 +89,24 @@ public class ClaimsController {
     public ResponseEntity<Long> countClaimsByStatus(@PathVariable String status) {
         log.info("Received request to count claims with status: {}", status);
         return ResponseEntity.ok(claimsService.countClaimsByStatus(status));
+    }
+
+    /** Download document for a claim */
+    @GetMapping("/{id}/document")
+    public ResponseEntity<Resource> downloadDocument(@PathVariable Long id) {
+        log.info("Received request to download document for claim ID: {}", id);
+        Resource resource = claimsService.getDocumentResource(id);
+        
+        String contentType = "application/octet-stream";
+        try {
+            contentType = Files.probeContentType(Paths.get(resource.getURI()));
+        } catch (IOException e) {
+            log.warn("Could not determine file type.");
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
     }
 }

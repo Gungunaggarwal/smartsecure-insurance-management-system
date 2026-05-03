@@ -43,4 +43,8 @@ export class PolicyService {
   getPurchasedPolicies(username: string): Observable<PolicyResponse[]> {
     return this.http.get<PolicyResponse[]>(`${this.apiUrl}/user/${username}`);
   }
+
+  getPaymentConfig(): Observable<{keyId: string}> {
+    return this.http.get<{keyId: string}>(`${environment.apiUrl}/api/v1/payments/config`);
+  }
 }

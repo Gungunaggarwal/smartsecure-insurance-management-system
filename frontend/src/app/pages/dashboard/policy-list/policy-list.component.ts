@@ -4,6 +4,8 @@ import { PolicyService } from '../../../core/services/policy.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { PolicyResponse } from '../../../models/policy.model';
 
+declare var Razorpay: any;
+
 @Component({
   selector: 'app-policy-list',
   standalone: true,
@@ -68,13 +70,77 @@ import { PolicyResponse } from '../../../models/policy.model';
               <span class="price-value">₹{{ policy.basePremium }}<span class="price-period">/yr</span></span>
             </div>
             
-            <button (click)="purchasePolicy(policy)" 
+            <button (click)="openPaymentModal(policy)" 
                     class="btn btn-primary purchase-btn" 
                     [disabled]="isPurchasing === policy.id">
               <span *ngIf="isPurchasing !== policy.id">Get Covered <i class="fas fa-shield-check"></i></span>
               <span *ngIf="isPurchasing === policy.id"><i class="fas fa-spinner fa-spin"></i> Processing...</span>
             </button>
           </div>
+        </div>
+      </div>
+
+      <!-- Razorpay-style QR Modal -->
+      <div class="modal-overlay" *ngIf="showPaymentModal()" (click)="closeModal()">
+        <div class="razorpay-modal animate-scale" (click)="$event.stopPropagation()">
+          <div class="modal-left">
+            <div class="brand">
+              <div class="logo">S</div>
+              <h3>SmartSecure <span class="badge">SECURE</span></h3>
+            </div>
+            
+            <div class="order-details">
+              <div class="detail-row">
+                <span class="label">Policy</span>
+                <span class="value">{{ selectedPolicy()?.name }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Amount</span>
+                <span class="value amount">₹{{ selectedPolicy()?.basePremium }}</span>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <p><i class="fas fa-shield-alt"></i> Payments are 100% Secure & Encrypted</p>
+            </div>
+          </div>
+
+          <div class="modal-right">
+            <div class="step-content qr-step" *ngIf="paymentStep() === 1">
+              <h4>Scan QR to Pay</h4>
+              <p>Use any UPI App like GPay, PhonePe or Paytm</p>
+              
+              <div class="qr-box">
+                <img src="assets/images/qr-code.png" alt="Payment QR">
+                <div class="qr-overlay" *ngIf="isVerifying()">
+                   <div class="spinner-small"></div>
+                   <span>Verifying...</span>
+                </div>
+              </div>
+
+              <div class="upi-icons">
+                 <i class="fab fa-google-pay"></i>
+                 <i class="fas fa-university"></i>
+                 <i class="fas fa-mobile-alt"></i>
+              </div>
+
+              <button class="btn btn-pay" (click)="simulatePayment()" [disabled]="isVerifying()">
+                <span *ngIf="!isVerifying()">I Have Paid <i class="fas fa-arrow-right"></i></span>
+                <span *ngIf="isVerifying()"><i class="fas fa-spinner fa-spin"></i> Checking Bank...</span>
+              </button>
+            </div>
+
+            <div class="step-content success-step animate-fade" *ngIf="paymentStep() === 2">
+               <div class="success-icon">
+                 <i class="fas fa-check-circle"></i>
+               </div>
+               <h3>Payment Successful!</h3>
+               <p>Your policy is being activated. Redirecting you to your dashboard...</p>
+               <div class="confetti"></div>
+            </div>
+          </div>
+          
+          <button class="close-modal" (click)="closeModal()">&times;</button>
         </div>
       </div>
     </div>
@@ -260,7 +326,86 @@ import { PolicyResponse } from '../../../models/policy.model';
     .skel-top, .skel-body, .skel-bottom {
       background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
       background-size: 200% 100%;
+      background-size: 200% 100%;
       animation: shimmer 1.5s infinite;
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+      display: flex; align-items: center; justify-content: center; z-index: 1000;
+      padding: 1rem;
+    }
+
+    .razorpay-modal {
+      width: 100%; max-width: 750px; background: white; border-radius: 20px;
+      display: grid; grid-template-columns: 300px 1fr; overflow: hidden;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.5); position: relative;
+    }
+
+    .modal-left { background: #0c1c3c; color: white; padding: 2.5rem; display: flex; flex-direction: column; }
+    .brand { display: flex; align-items: center; gap: 1rem; margin-bottom: 3rem; }
+    .logo { 
+      width: 40px; height: 40px; background: #3399cc; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.5rem;
+    }
+    .brand h3 { font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; }
+    .badge { font-size: 0.6rem; background: #22c55e; padding: 0.2rem 0.4rem; border-radius: 4px; }
+
+    .order-details { flex: 1; display: flex; flex-direction: column; gap: 1.5rem; }
+    .detail-row { display: flex; flex-direction: column; gap: 0.25rem; }
+    .detail-row .label { font-size: 0.8rem; opacity: 0.6; text-transform: uppercase; font-weight: 700; }
+    .detail-row .value { font-size: 1.1rem; font-weight: 600; }
+    .detail-row .amount { font-size: 1.8rem; color: #3399cc; }
+
+    .modal-footer { margin-top: auto; font-size: 0.75rem; opacity: 0.5; display: flex; align-items: center; gap: 0.5rem; }
+
+    .modal-right { background: #f9fafb; padding: 3rem; color: #1f2937; position: relative; }
+    .step-content { text-align: center; }
+    .step-content h4 { font-size: 1.5rem; margin-bottom: 0.5rem; color: #0c1c3c; }
+    .step-content p { color: #6b7280; font-size: 0.9rem; margin-bottom: 2rem; }
+
+    .qr-box { 
+      background: white; padding: 1.5rem; border-radius: 16px; 
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 2rem;
+      position: relative; border: 1px solid #e5e7eb;
+      display: inline-block;
+    }
+    .qr-box img { width: 180px; height: 180px; display: block; }
+    
+    .qr-overlay {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.9); display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 1rem; border-radius: 16px;
+    }
+
+    .upi-icons { display: flex; justify-content: center; gap: 1.5rem; font-size: 1.5rem; color: #9ca3af; margin-bottom: 2rem; }
+
+    .btn-pay {
+      background: #3399cc; color: white; width: 100%; padding: 1rem;
+      border-radius: 10px; font-weight: 700; transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(51,153,204,0.3);
+    }
+    .btn-pay:hover { background: #2b84b0; transform: translateY(-2px); box-shadow: 0 6px 18px rgba(51,153,204,0.4); }
+
+    .success-icon { font-size: 5rem; color: #22c55e; margin-bottom: 1.5rem; }
+    .success-step h3 { font-size: 1.8rem; margin-bottom: 1rem; }
+
+    .close-modal {
+      position: absolute; top: 1rem; right: 1.5rem; background: none; border: none;
+      font-size: 2rem; color: #9ca3af; cursor: pointer; z-index: 10;
+    }
+    .close-modal:hover { color: #1f2937; }
+
+    .spinner-small {
+      width: 30px; height: 30px; border: 3px solid rgba(51,153,204,0.1);
+      border-top-color: #3399cc; border-radius: 50%; animation: spin 1s linear infinite;
+    }
+
+    @media (max-width: 768px) {
+      .razorpay-modal { grid-template-columns: 1fr; }
+      .modal-left { display: none; }
     }
   `]
 })
@@ -269,6 +414,11 @@ export class PolicyListComponent implements OnInit {
   isLoading = signal<boolean>(true);
   hasError = signal<boolean>(false);
   isPurchasing: number | null = null;
+
+  showPaymentModal = signal<boolean>(false);
+  selectedPolicy = signal<PolicyResponse | null>(null);
+  paymentStep = signal<number>(1);
+  isVerifying = signal<boolean>(false);
 
   constructor(
     private policyService: PolicyService,
@@ -311,13 +461,84 @@ export class PolicyListComponent implements OnInit {
     this.isPurchasing = policy.id;
     this.policyService.purchasePolicy(policy.id).subscribe({
       next: () => {
-        this.toastService.show(`Successfully purchased ${policy.name}!`, 'success');
+        this.paymentStep.set(2);
+        this.isVerifying.set(false);
         this.isPurchasing = null;
+        
+        // Auto close and notify after success animation
+        setTimeout(() => {
+          this.closeModal();
+          this.toastService.show(`Successfully purchased ${policy.name}!`, 'success');
+        }, 3000);
       },
       error: (err) => {
         console.error('Purchase error:', err);
         this.toastService.show('Purchase failed. Please check your balance or try again later.', 'error');
         this.isPurchasing = null;
+        this.isVerifying.set(false);
+      }
+    });
+  }
+
+  openPaymentModal(policy: PolicyResponse) {
+    this.selectedPolicy.set(policy);
+    this.paymentStep.set(1);
+    this.isVerifying.set(false);
+    this.showPaymentModal.set(true);
+  }
+
+  closeModal() {
+    this.showPaymentModal.set(false);
+    this.selectedPolicy.set(null);
+  }
+
+  simulatePayment() {
+    this.payWithRazorpay();
+  }
+
+  payWithRazorpay() {
+    this.isVerifying.set(true);
+    const policy = this.selectedPolicy();
+    if (!policy) return;
+
+    // Fetch the real Key ID from our backend securely
+    this.policyService.getPaymentConfig().subscribe({
+      next: (config: any) => {
+        const options = {
+          key: config.keyId, // Using the real key fetched from .env via backend
+          amount: policy.basePremium * 100, // Amount in paisa
+          currency: "INR",
+          name: "SmartSecure Insurance",
+          description: `Purchase for ${policy.name}`,
+          image: "assets/images/logo.png",
+          handler: (response: any) => {
+            console.log("Razorpay Success:", response);
+            this.purchasePolicy(policy);
+          },
+          prefill: {
+            name: "Valued Customer",
+            email: "customer@example.com",
+            contact: "9999999999"
+          },
+          theme: {
+            color: "#0c1c3c"
+          }
+        };
+
+        try {
+          const rzp = new Razorpay(options);
+          rzp.open();
+          this.closeModal();
+          this.isVerifying.set(false);
+        } catch (err) {
+          console.error("Razorpay Error:", err);
+          this.toastService.show("Razorpay is not loaded.", "error");
+          this.isVerifying.set(false);
+        }
+      },
+      error: () => {
+        this.toastService.show("Could not load payment configuration.", "error");
+        this.isVerifying.set(false);
       }
     });
   }

@@ -14,7 +14,7 @@ import java.util.UUID;
 @Component
 public class FileStorageUtil {
 
-    private final String UPLOAD_DIR = System.getProperty("java.io.tmpdir") + File.separator + "uploads";
+    private final String UPLOAD_DIR = "/app/uploads";
 
     public FileStorageUtil() {
         File directory = new File(UPLOAD_DIR);
