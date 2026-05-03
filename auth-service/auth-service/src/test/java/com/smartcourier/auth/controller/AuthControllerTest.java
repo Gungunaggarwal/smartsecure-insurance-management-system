@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartcourier.auth.config.SecurityConfig;
 import com.smartcourier.auth.dto.AuthResponse;
 import com.smartcourier.auth.dto.LoginRequest;
+import com.smartcourier.auth.dto.RegisterRequest;
 import com.smartcourier.auth.service.AuthService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,10 +41,14 @@ class AuthControllerTest {
         AuthResponse authResponse = AuthResponse.builder().token("mock-jwt-token").build();
         when(authService.register(any())).thenReturn(authResponse);
 
-        com.smartcourier.auth.dto.RegisterRequest registerRequest = new com.smartcourier.auth.dto.RegisterRequest();
+        RegisterRequest registerRequest = new RegisterRequest();
         registerRequest.setUsername("testuser");
+        registerRequest.setName("Test User");
         registerRequest.setPassword("password");
         registerRequest.setEmail("test@email.com");
+        registerRequest.setPhone("1234567890");
+        registerRequest.setAddress("Test Address");
+        registerRequest.setOtp("123456");
 
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)

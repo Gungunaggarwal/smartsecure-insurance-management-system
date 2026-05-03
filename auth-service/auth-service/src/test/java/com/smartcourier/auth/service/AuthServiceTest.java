@@ -34,6 +34,9 @@ class AuthServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private com.smartcourier.auth.service.OtpService otpService;
+
     @InjectMocks
     private AuthService authService;
 
@@ -53,9 +56,15 @@ class AuthServiceTest {
 
         registerRequest = new RegisterRequest();
         registerRequest.setUsername("testuser");
+        registerRequest.setName("Test User");
         registerRequest.setEmail("test@test.com");
         registerRequest.setPassword("password");
+        registerRequest.setPhone("1234567890");
+        registerRequest.setAddress("Test Address");
+        registerRequest.setOtp("123456");
         registerRequest.setRole("USER");
+
+        lenient().when(otpService.verifyOtp(anyString(), anyString())).thenReturn(true);
 
         loginRequest = new LoginRequest();
         loginRequest.setEmail("test@test.com");
