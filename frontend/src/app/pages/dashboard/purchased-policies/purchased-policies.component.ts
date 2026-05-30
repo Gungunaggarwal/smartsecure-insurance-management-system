@@ -111,6 +111,7 @@ import { RouterModule } from '@angular/router';
     .theme-life .card-glow { background: var(--accent-red); }
     .theme-vehicle .card-glow { background: var(--accent-blue); }
     .theme-home .card-glow { background: var(--accent-violet); }
+    .theme-travel .card-glow { background: var(--accent-teal); }
 
     .policy-header {
       display: flex;

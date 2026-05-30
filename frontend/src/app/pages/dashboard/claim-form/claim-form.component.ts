@@ -202,7 +202,7 @@ import { Router } from '@angular/router';
       font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 0.75rem;
     }
 
-    .submit-btn { height: 3.5rem; font-size: 1rem; font-weight: 700; margin-top: 1rem; }
+    .submit-btn { height: 3.5rem; width: 100%; font-size: 1rem; font-weight: 700; margin-top: 1rem; }
 
     /* Sidebar Boxes */
     .claim-sidebar { display: flex; flex-direction: column; gap: 1.5rem; }

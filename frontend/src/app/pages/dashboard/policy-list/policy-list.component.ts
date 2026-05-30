@@ -4,7 +4,7 @@ import { PolicyService } from '../../../core/services/policy.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { PolicyResponse } from '../../../models/policy.model';
 
-declare var Razorpay: any;
+
 
 @Component({
   selector: 'app-policy-list',
@@ -211,11 +211,18 @@ declare var Razorpay: any;
     .theme-life .card-glow { background: var(--accent-red); }
     .theme-vehicle .card-glow { background: var(--accent-blue); }
     .theme-home .card-glow { background: var(--accent-violet); }
+    .theme-travel .card-glow { 
+      background: #00ffd4; 
+      height: 6px; 
+      z-index: 10;
+      box-shadow: 0 0 15px rgba(0, 255, 212, 0.5);
+    }
 
     .theme-health:hover { box-shadow: 0 20px 40px rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); }
     .theme-life:hover { box-shadow: 0 20px 40px rgba(255,68,68,0.15); border-color: rgba(255,68,68,0.3); }
     .theme-vehicle:hover { box-shadow: 0 20px 40px rgba(88,166,255,0.15); border-color: rgba(88,166,255,0.3); }
     .theme-home:hover { box-shadow: 0 20px 40px rgba(124,58,237,0.15); border-color: rgba(124,58,237,0.3); }
+    .theme-travel:hover { box-shadow: 0 20px 40px rgba(0,212,170,0.15); border-color: rgba(0,212,170,0.3); }
 
     /* Card Content */
     .policy-header {
@@ -237,6 +244,7 @@ declare var Razorpay: any;
     .theme-life .policy-icon { color: var(--accent-red); background: rgba(255,68,68,0.1); }
     .theme-vehicle .policy-icon { color: var(--accent-blue); background: var(--accent-blue-dim); }
     .theme-home .policy-icon { color: var(--accent-violet); background: var(--accent-violet-dim); }
+    .theme-travel .policy-icon { color: var(--accent-teal); background: rgba(0,212,170,0.1); }
 
     .policy-type-badge {
       font-size: 0.7rem;
@@ -290,6 +298,9 @@ declare var Razorpay: any;
     
     .theme-home .purchase-btn { background: linear-gradient(135deg, #7c3aed, #6d28d9); box-shadow: 0 4px 15px rgba(124,58,237,0.3); }
     .theme-home .purchase-btn:hover { box-shadow: 0 8px 25px rgba(124,58,237,0.4); }
+
+    .theme-travel .purchase-btn { background: linear-gradient(135deg, var(--accent-teal), #00b894); box-shadow: 0 4px 15px rgba(0,212,170,0.3); }
+    .theme-travel .purchase-btn:hover { box-shadow: 0 8px 25px rgba(0,212,170,0.4); }
 
     /* States */
     .state-container {
@@ -493,53 +504,13 @@ export class PolicyListComponent implements OnInit {
   }
 
   simulatePayment() {
-    this.payWithRazorpay();
-  }
-
-  payWithRazorpay() {
-    this.isVerifying.set(true);
     const policy = this.selectedPolicy();
     if (!policy) return;
 
-    // Fetch the real Key ID from our backend securely
-    this.policyService.getPaymentConfig().subscribe({
-      next: (config: any) => {
-        const options = {
-          key: config.keyId, // Using the real key fetched from .env via backend
-          amount: policy.basePremium * 100, // Amount in paisa
-          currency: "INR",
-          name: "SmartSecure Insurance",
-          description: `Purchase for ${policy.name}`,
-          image: "assets/images/logo.png",
-          handler: (response: any) => {
-            console.log("Razorpay Success:", response);
-            this.purchasePolicy(policy);
-          },
-          prefill: {
-            name: "Valued Customer",
-            email: "customer@example.com",
-            contact: "9999999999"
-          },
-          theme: {
-            color: "#0c1c3c"
-          }
-        };
-
-        try {
-          const rzp = new Razorpay(options);
-          rzp.open();
-          this.closeModal();
-          this.isVerifying.set(false);
-        } catch (err) {
-          console.error("Razorpay Error:", err);
-          this.toastService.show("Razorpay is not loaded.", "error");
-          this.isVerifying.set(false);
-        }
-      },
-      error: () => {
-        this.toastService.show("Could not load payment configuration.", "error");
-        this.isVerifying.set(false);
-      }
-    });
+    // Show bank verification animation for 2.5 seconds, then process purchase
+    this.isVerifying.set(true);
+    setTimeout(() => {
+      this.purchasePolicy(policy);
+    }, 2500);
   }
 }

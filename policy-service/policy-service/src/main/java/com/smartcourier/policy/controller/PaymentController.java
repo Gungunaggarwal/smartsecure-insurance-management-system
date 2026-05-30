@@ -45,7 +45,7 @@ public class PaymentController {
 
             Order order = razorpay.orders.create(orderRequest);
             log.info("Razorpay Order created: {}", order.get("id").toString());
-            
+
             return ResponseEntity.ok(order.toString());
         } catch (RazorpayException e) {
             log.error("Razorpay Error: {}", e.getMessage());
@@ -56,7 +56,6 @@ public class PaymentController {
     /** Verification Endpoint (Mocked for now) */
     @PostMapping("/verify")
     public ResponseEntity<String> verifyPayment(@RequestBody Map<String, String> data) {
-        // In a real app, you would use RazorpayUtils.verifyPaymentSignature(...)
         log.info("Payment verification received for order: {}", data.get("razorpay_order_id"));
         return ResponseEntity.ok("Payment Verified Successfully");
     }

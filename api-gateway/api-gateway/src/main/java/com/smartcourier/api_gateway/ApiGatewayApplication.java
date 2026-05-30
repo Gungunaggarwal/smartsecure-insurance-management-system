@@ -18,7 +18,7 @@ public class ApiGatewayApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(ApiGatewayApplication.class, args);
 	}
-
+// CORS configuration to allow requests from the
 	@Bean
 	public GlobalFilter requestTraceFilter() {
 		return (exchange, chain) -> {

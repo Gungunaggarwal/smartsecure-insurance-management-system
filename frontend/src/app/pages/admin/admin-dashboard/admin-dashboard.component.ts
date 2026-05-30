@@ -392,7 +392,7 @@ import { ToastService } from '../../../core/services/toast.service';
     /* Approve Button Vibe */
     .action-btn.approve {
       border-color: rgba(34, 197, 94, 0.3);
-      color: #4ade80;
+      color: #3b17ba;
     }
     .action-btn.approve:hover {
       background: rgba(34, 197, 94, 0.15);
@@ -465,6 +465,7 @@ import { ToastService } from '../../../core/services/toast.service';
     .border-life { border-left-color: var(--accent-red); }
     .border-vehicle { border-left-color: var(--accent-blue); }
     .border-home { border-left-color: var(--accent-violet); }
+    .border-travel { border-left-color: var(--accent-teal); }
 
     .m-icon { width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; color: var(--accent-teal); }
     .m-id-tag { font-family: monospace; font-weight: 800; font-size: 0.7rem; opacity: 0.8; }

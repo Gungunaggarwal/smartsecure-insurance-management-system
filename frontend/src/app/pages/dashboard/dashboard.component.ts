@@ -324,6 +324,7 @@ import { forkJoin } from 'rxjs';
     .border-life { border-left-color: var(--accent-red); }
     .border-vehicle { border-left-color: var(--accent-blue); }
     .border-home { border-left-color: var(--accent-violet); }
+    .border-travel { border-left-color: var(--accent-teal); }
 
     /* Utilities */
     .empty-state { text-align: center; padding: 3rem 1rem; }
