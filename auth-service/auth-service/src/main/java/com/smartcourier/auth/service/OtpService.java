@@ -34,11 +34,17 @@ public class OtpService {
 
     // ─── Generate & Send OTP ─────────────────────────────────────────────────
     public void sendOtp(String email) {
-        String otp = String.format("%06d", RANDOM.nextInt(999999));
+        boolean demoMode = Boolean.parseBoolean(System.getenv("DEMO_MODE"));
+        String otp = demoMode ? "123456" : String.format("%06d", RANDOM.nextInt(999999));
         LocalDateTime expiry = LocalDateTime.now().plusMinutes(otpExpiryMinutes);
         otpStore.put(email, new OtpEntry(otp, expiry));
 
         log.info("Sending OTP to email: {}", email);
+        if (demoMode) {
+            log.info("DEMO MODE ENABLED: OTP is {} (Email not sent)", otp);
+            return;
+        }
+
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);

@@ -273,7 +273,7 @@ export class RegisterComponent {
           this.isSendingOtp = false;
           this.registerForm.get('otp')?.setValidators([Validators.required, Validators.minLength(6)]);
           this.registerForm.get('otp')?.updateValueAndValidity();
-          this.toastService.show('Verification code sent to ' + email, 'success');
+          this.toastService.show('OTP Sent! (Demo Mode: Use 123456)', 'success');
         },
         error: (err) => {
           this.isSendingOtp = false;
