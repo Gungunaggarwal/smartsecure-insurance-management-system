@@ -40,7 +40,8 @@ export RABBITMQ_LOG_BASE=/tmp/rabbitmq/logs
 export HOME=/tmp/rabbitmq
 
 echo "Starting RabbitMQ Server..."
-rabbitmq-server -detached || echo "RabbitMQ already running or starting."
+rabbitmq-server > /tmp/logs/rabbitmq.log 2>&1 &
+sleep 5
 
 # 5. Start Zipkin (for Distributed Tracing)
 echo "Starting Zipkin Tracing..."
