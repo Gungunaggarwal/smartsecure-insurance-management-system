@@ -68,6 +68,13 @@ public class OtpService {
 
     // ─── Verify OTP ──────────────────────────────────────────────────────────
     public boolean verifyOtp(String email, String otp) {
+        boolean demoMode = Boolean.parseBoolean(System.getenv("DEMO_MODE"));
+        // In demo mode, always accept the universal demo OTP
+        if (demoMode && "123456".equals(otp)) {
+            log.info("DEMO MODE: Accepting universal OTP 123456 for email: {}", email);
+            return true;
+        }
+
         OtpEntry entry = otpStore.get(email);
         if (entry == null) {
             log.warn("OTP verification failed: no OTP found for email {}", email);

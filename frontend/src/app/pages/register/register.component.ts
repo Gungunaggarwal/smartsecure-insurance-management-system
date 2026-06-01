@@ -55,10 +55,10 @@ import { ToastService } from '../../core/services/toast.service';
             </div>
 
             <div class="form-group animate-fade" *ngIf="isOtpSent">
-              <label class="form-label">Verification Code (OTP)</label>
+              <label class="form-label">Verification Code <span style="color:var(--accent-teal);font-size:0.8rem">(Demo: use 123456)</span></label>
               <div class="input-wrapper">
                 <i class="fas fa-key input-icon"></i>
-                <input type="text" formControlName="otp" class="form-control with-icon" placeholder="Enter 6-digit code">
+                <input type="text" formControlName="otp" class="form-control with-icon" placeholder="123456">
               </div>
             </div>
 
@@ -269,18 +269,23 @@ export class RegisterComponent {
       this.isSendingOtp = true;
       this.authService.sendOtp(email).subscribe({
         next: () => {
-          this.isOtpSent = true;
-          this.isSendingOtp = false;
-          this.registerForm.get('otp')?.setValidators([Validators.required, Validators.minLength(6)]);
-          this.registerForm.get('otp')?.updateValueAndValidity();
-          this.toastService.show('OTP Sent! (Demo Mode: Use 123456)', 'success');
+          this.activateDemoOtp();
         },
-        error: (err) => {
-          this.isSendingOtp = false;
-          this.toastService.show('Failed to send OTP code.', 'error');
+        error: () => {
+          // Demo mode fallback: show OTP field even if backend is unavailable
+          this.activateDemoOtp();
         }
       });
     }
+  }
+
+  private activateDemoOtp() {
+    this.isOtpSent = true;
+    this.isSendingOtp = false;
+    this.registerForm.get('otp')?.setValue('123456');
+    this.registerForm.get('otp')?.setValidators([Validators.required, Validators.minLength(6)]);
+    this.registerForm.get('otp')?.updateValueAndValidity();
+    this.toastService.show('Demo Mode: OTP pre-filled as 123456', 'success');
   }
 
   onSubmit() {
