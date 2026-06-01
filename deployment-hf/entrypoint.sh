@@ -75,6 +75,8 @@ echo "Launching Auth Service..."
 export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/auth_db
 export SPRING_DATASOURCE_USERNAME=user
 export SPRING_DATASOURCE_PASSWORD=""
+export MAIL_USERNAME="${MAIL_USERNAME:-gungunnaggarwal@gmail.com}"
+export MAIL_PASSWORD="${MAIL_PASSWORD:-lady ulyq gqqr gfdn}"
 java -jar /app/auth-service.jar > /tmp/logs/auth-service.log 2>&1 &
 
 echo "Launching Policy Service..."
