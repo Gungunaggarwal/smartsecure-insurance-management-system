@@ -33,7 +33,7 @@ redis-server --port 6379 --dir /tmp --daemonize yes
 # 4. Start RabbitMQ
 echo "Configuring RabbitMQ..."
 export RABBITMQ_BASE=/tmp/rabbitmq
-export RABBITMQ_LOGS=/tmp/rabbitmq/logs
+export RABBITMQ_LOGS=/tmp/rabbitmq/logs/rabbit.log
 export RABBITMQ_PID_FILE=/tmp/rabbitmq/rabbitmq.pid
 export RABBITMQ_MNESIA_BASE=/tmp/rabbitmq/mnesia
 export RABBITMQ_LOG_BASE=/tmp/rabbitmq/logs
@@ -72,13 +72,13 @@ sleep 5
 # Start Business Services
 echo "Launching Auth Service..."
 export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/auth_db
-export SPRING_DATASOURCE_USERNAME=postgres
+export SPRING_DATASOURCE_USERNAME=user
 export SPRING_DATASOURCE_PASSWORD=""
 java -jar /app/auth-service.jar > /tmp/logs/auth-service.log 2>&1 &
 
 echo "Launching Policy Service..."
 export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/policy_db
-export SPRING_DATASOURCE_USERNAME=postgres
+export SPRING_DATASOURCE_USERNAME=user
 export SPRING_DATASOURCE_PASSWORD=""
 export RAZORPAY_KEY_ID="${RAZORPAY_KEY_ID:-rzp_test_SkQwUPAGLYRSdy}"
 export RAZORPAY_KEY_SECRET="${RAZORPAY_KEY_SECRET:-qpKbWJetTzKztvl3OwSzrDi}"
@@ -86,7 +86,7 @@ java -jar /app/policy-service.jar > /tmp/logs/policy-service.log 2>&1 &
 
 echo "Launching Claims Service..."
 export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/claims_db
-export SPRING_DATASOURCE_USERNAME=postgres
+export SPRING_DATASOURCE_USERNAME=user
 export SPRING_DATASOURCE_PASSWORD=""
 java -jar /app/claims-service.jar > /tmp/logs/claims-service.log 2>&1 &
 
